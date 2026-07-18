@@ -5,7 +5,7 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using NecroLens.Data;
 using NecroLens.Model;
 using NecroLens.util;

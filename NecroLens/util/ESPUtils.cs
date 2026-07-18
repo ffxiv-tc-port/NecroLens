@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Numerics;
 using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using NecroLens.Model;
 
 namespace NecroLens.util;
@@ -24,7 +24,7 @@ public static class ESPUtils
 
     public static bool IsIgnoredObject(IGameObject gameObject)
     {
-        if (DataIds.IgnoredDataIDs.Contains(gameObject.BaseId)) return true;
+        if (DataIds.IgnoredDataIDs.Contains(gameObject.DataId)) return true;
         if (gameObject.IsDead || gameObject is IBattleNpc { CurrentHp: <= 0 }) return true;
 
         return false;

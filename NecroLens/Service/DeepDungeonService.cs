@@ -186,9 +186,9 @@ public class DeepDungeonService : IDisposable
                     var pomander = (Pomander)args[0];
                     if (pomander > 0)
                     {
-                        var player = ObjectTable.LocalPlayer!;
+                        var player = ClientState.LocalPlayer!;
                         var chest = ObjectTable
-                                    .Where(o => o.BaseId == DataIds.GoldChest)
+                                    .Where(o => o.DataId == DataIds.GoldChest)
                                     .FirstOrDefault(o => o.Position.Distance2D(player.Position) <= 4.6f);
                         if (chest != null)
                         {
@@ -218,7 +218,7 @@ public class DeepDungeonService : IDisposable
 
     internal unsafe void TryInteract(ESPObject espObj)
     {
-        var player = ObjectTable.LocalPlayer!;
+        var player = ClientState.LocalPlayer!;
         if ((player.StatusFlags & StatusFlags.InCombat) == 0 && conf.OpenChests && espObj.IsChest())
         {
             var type = espObj.Type;
@@ -246,7 +246,7 @@ public class DeepDungeonService : IDisposable
         foreach (var obj in ObjectTable)
             if (obj.IsValid())
             {
-                var dataId = obj.BaseId;
+                var dataId = obj.DataId;
                 if (DataIds.BronzeChestIDs.Contains(dataId) || DataIds.SilverChest == dataId ||
                     DataIds.GoldChest == dataId || DataIds.AccursedHoardCoffer == dataId)
                 {

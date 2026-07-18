@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+<Project Sdk="Dalamud.NET.Sdk/12.0.2">
     <PropertyGroup>
-        <Authors>Jukka</Authors>
-        <Version>1.0.8.12</Version>
+        <Authors>Jukka, Lother</Authors>
+        <Version>7.15.0.1</Version>
         <Description>NecroLens Dalamud Plugin</Description>
-        <PackageProjectUrl>https://github.com/Jukkales/NecroLens</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Lother/NecroLens</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows7.0</TargetFramework>
+        <TargetFramework>net9.0-windows7.0</TargetFramework>
         <Platforms>x64</Platforms>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
@@ -43,7 +43,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="ECommons" Version="3.1.0.6" />
+        <PackageReference Include="ECommons" Version="3.0.0.8" />
         <Reference Include="FFXIVClientStructs">
             <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
             <Private>false</Private>
