@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Timers;
 using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Hooking;
+using Dalamud.Game.Network;
 using ECommons.Automation;
 using ECommons.Automation.NeoTaskManager;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -31,45 +32,10 @@ public class DeepDungeonService : IDisposable
     private readonly TaskManager taskManager;
     public readonly FloorDetails FloorDetails;
     public readonly Dictionary<Pomander, string> PomanderNames;
-    
-    private const string ActorControlSig = "E8 ?? ?? ?? ?? 0F B7 0B 83 E9 64";
-    private delegate void ActorControlSelfDelegate(uint category, uint eventId, uint param1, uint param2, uint param3, uint param4, uint param5, uint param6, uint param7, uint param8, ulong targetId, byte param9);
-    private Hook<ActorControlSelfDelegate>? actorControlSelfHook;
-    
-    
-    private const string SystemLogSig = "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 0F B6 47 28";
-    private Hook<SystemLogMessageDelegate>? systemLogMessageHook;
-    private unsafe delegate void SystemLogMessageDelegate(uint entityId, uint logMessageId, int* args, byte argCount);
 
     public DeepDungeonService()
     {
-        // GameNetwork.NetworkMessage += NetworkMessage;
-        unsafe
-        {
-            try
-            {
-                var actorControlSelfPtr = SigScanner.ScanText(ActorControlSig);
-                actorControlSelfHook =
-                    GameInteropProvider.HookFromAddress<ActorControlSelfDelegate>(actorControlSelfPtr, ActorControlSelf);
-                actorControlSelfHook.Enable();
-            }
-            catch (Exception e)
-            {
-                PluginLog.Warning(e, $"Failed to find signature for {nameof(ActorControlSig)}, actor control tracking disabled");
-            }
-
-            try
-            {
-                var systemLogPtr = SigScanner.ScanText(SystemLogSig);
-                systemLogMessageHook =
-                    GameInteropProvider.HookFromAddress<SystemLogMessageDelegate>(systemLogPtr, SystemLogMessage);
-                systemLogMessageHook.Enable();
-            }
-            catch (Exception e)
-            {
-                PluginLog.Warning(e, $"Failed to find signature for {nameof(SystemLogSig)}, system log tracking disabled");
-            }
-        }
+        GameNetwork.NetworkMessage += NetworkMessage;
 
         FloorTimes = new Dictionary<int, int>();
         floorTimer = new Timer();
@@ -92,10 +58,7 @@ public class DeepDungeonService : IDisposable
 
     public void Dispose()
     {
-        actorControlSelfHook?.Disable();
-        actorControlSelfHook?.Dispose();
-        systemLogMessageHook?.Disable();
-        systemLogMessageHook?.Dispose();
+        GameNetwork.NetworkMessage -= NetworkMessage;
     }
 
     private void EnterDeepDungeon(int contentId, DeepDungeonContentInfo.DeepDungeonFloorSetInfo info)
@@ -152,67 +115,93 @@ public class DeepDungeonService : IDisposable
         FloorTimes[FloorDetails.CurrentFloor] = time;
     }
 
-    private void ActorControlSelf(uint category, uint eventId, uint param1, uint param2, uint param3, uint param4, uint param5, uint param6, uint param7, uint param8, ulong targetId, byte param9)
+    private void NetworkMessage(
+        IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
     {
-        actorControlSelfHook!.Original(category, eventId, param1, param2, param3, param4, param5, param6, param7, param8, targetId, param9);
+        if (direction != NetworkMessageDirection.ZoneDown) return;
 
-        if (eventId == 100 && !Ready && DeepDungeonContentInfo.ContentInfo.TryGetValue((int)param2, out var info))
-            EnterDeepDungeon((int)param2, info);
-
-        if (eventId == 200 && Ready && FloorDetails.FloorTransfer)
-            FloorDetails.NextFloor();
+        switch (opCode)
+        {
+            case (ushort)ServerZoneIpcType.SystemLogMessage:
+                OnSystemLogMessage(dataPtr, ReadNumber(dataPtr, 4, 4));
+                break;
+            case (ushort)ServerZoneIpcType.ActorControlSelf:
+                OnActorControlSelf(dataPtr);
+                break;
+        }
     }
 
-    private unsafe void SystemLogMessage(uint entityId, uint logId, int* args, byte argCount)
+    private void OnActorControlSelf(IntPtr dataPtr)
     {
-        systemLogMessageHook!.Original(entityId, logId, args, argCount);
-        
-        if (InDeepDungeon)
-        {
-            switch (logId)
-            {
-                case DataIds.SystemLogPomanderUsed:
-                    FloorDetails.OnPomanderUsed((Pomander)args[1]);
-                    break;
-                case DataIds.SystemLogDutyEnded:
-                    ExitDeepDungeon();
-                    break;
-                case DataIds.SystemLogTransferenceInitiated:
-                    FloorDetails.FloorTransfer = true;
-                    FloorDetails.DumpFloorObjects(CurrentContentId);
-                    FloorDetails.FloorObjects.Clear();
-                    
-                    break;
-                case 0x1C66:
-                    if (Ready && FloorDetails.FloorTransfer)
-                    {
-                        FloorDetails.NextFloor();
-                    }
-                    break;
-                case 0x1C6A:
-                case 0x1C6B:
-                case 0x1C6C:
-                    FloorDetails.HoardFound = true;
-                    break;
-                case 0x1C36:
-                case 0x23F8:
-                    // case 0x282F: // Demiclone
-                    var pomander = (Pomander)args[0];
-                    if (pomander > 0)
-                    {
-                        var player = ClientState.LocalPlayer!;
-                        var chest = ObjectTable
-                                    .Where(o => o.DataId == DataIds.GoldChest)
-                                    .FirstOrDefault(o => o.Position.Distance2D(player.Position) <= 4.6f);
-                        if (chest != null)
-                        {
-                            FloorDetails.DoubleChests[chest.EntityId] = pomander;
-                        }
-                    }
+        if (Marshal.ReadByte(dataPtr) != DataIds.ActorControlSelfDirectorUpdate) return;
 
-                    break;
+        switch (Marshal.ReadByte(dataPtr, 8))
+        {
+            case DataIds.DirectorUpdateDutyCommenced:
+            {
+                var contentId = ReadNumber(dataPtr, 4, 2);
+                if (!Ready && DeepDungeonContentInfo.ContentInfo.TryGetValue(contentId, out var info))
+                    EnterDeepDungeon(contentId, info);
+                break;
             }
+            case DataIds.DirectorUpdateDutyRecommenced:
+                if (Ready && FloorDetails.FloorTransfer)
+                    FloorDetails.NextFloor();
+                break;
         }
+    }
+
+    private void OnSystemLogMessage(IntPtr dataPtr, int logId)
+    {
+        if (!InDeepDungeon) return;
+
+        switch ((uint)logId)
+        {
+            case DataIds.SystemLogPomanderUsed:
+                FloorDetails.OnPomanderUsed((Pomander)Marshal.ReadByte(dataPtr, 16));
+                break;
+            case DataIds.SystemLogDutyEnded:
+                ExitDeepDungeon();
+                break;
+            case DataIds.SystemLogTransferenceInitiated:
+                FloorDetails.FloorTransfer = true;
+                FloorDetails.DumpFloorObjects(CurrentContentId);
+                FloorDetails.FloorObjects.Clear();
+                break;
+            case 0x1C66:
+                if (Ready && FloorDetails.FloorTransfer)
+                    FloorDetails.NextFloor();
+                break;
+            case 0x1C6A:
+            case 0x1C6B:
+            case 0x1C6C:
+                FloorDetails.HoardFound = true;
+                break;
+            case 0x1C36:
+            case 0x23F8:
+                // case 0x282F: // Demiclone
+                var pomander = (Pomander)Marshal.ReadByte(dataPtr, 12);
+                if (pomander > 0)
+                {
+                    var player = ClientState.LocalPlayer!;
+                    var chest = ObjectTable
+                                .Where(o => o.DataId == DataIds.GoldChest)
+                                .FirstOrDefault(o => o.Position.Distance2D(player.Position) <= 4.6f);
+                    if (chest != null)
+                    {
+                        FloorDetails.DoubleChests[chest.EntityId] = pomander;
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private static int ReadNumber(IntPtr dataPtr, int offset, int size)
+    {
+        var bytes = new byte[4];
+        Marshal.Copy(dataPtr + offset, bytes, 0, size);
+        return BitConverter.ToInt32(bytes);
     }
 
     private bool CheckChestOpenSafe(ESPObject.ESPType type)
