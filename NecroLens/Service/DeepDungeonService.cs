@@ -46,15 +46,29 @@ public class DeepDungeonService : IDisposable
         // GameNetwork.NetworkMessage += NetworkMessage;
         unsafe
         {
-            var actorControlSelfPtr = SigScanner.ScanText(ActorControlSig);
-            actorControlSelfHook =
-                GameInteropProvider.HookFromAddress<ActorControlSelfDelegate>(actorControlSelfPtr, ActorControlSelf);
-            actorControlSelfHook.Enable();
+            try
+            {
+                var actorControlSelfPtr = SigScanner.ScanText(ActorControlSig);
+                actorControlSelfHook =
+                    GameInteropProvider.HookFromAddress<ActorControlSelfDelegate>(actorControlSelfPtr, ActorControlSelf);
+                actorControlSelfHook.Enable();
+            }
+            catch (Exception e)
+            {
+                PluginLog.Warning(e, $"Failed to find signature for {nameof(ActorControlSig)}, actor control tracking disabled");
+            }
 
-            var systemLogPtr = SigScanner.ScanText(SystemLogSig);
-            systemLogMessageHook =
-                GameInteropProvider.HookFromAddress<SystemLogMessageDelegate>(systemLogPtr, SystemLogMessage);
-            systemLogMessageHook.Enable();
+            try
+            {
+                var systemLogPtr = SigScanner.ScanText(SystemLogSig);
+                systemLogMessageHook =
+                    GameInteropProvider.HookFromAddress<SystemLogMessageDelegate>(systemLogPtr, SystemLogMessage);
+                systemLogMessageHook.Enable();
+            }
+            catch (Exception e)
+            {
+                PluginLog.Warning(e, $"Failed to find signature for {nameof(SystemLogSig)}, system log tracking disabled");
+            }
         }
 
         FloorTimes = new Dictionary<int, int>();
