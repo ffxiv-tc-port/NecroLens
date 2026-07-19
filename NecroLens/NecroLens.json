@@ -1,5 +1,5 @@
 {
-    "Author": "Jukka",
+    "Author": "Jukka, Lother",
     "Name": "NecroLens",
     "Punchline": "A true Necromancer always know the DeepDungeon ... everyone else just uses a high tech!",
     "Description": "DeepDungeon Helper. Radar for Mobs, Aggro, Sight and everything else.",
@@ -15,6 +15,6 @@
         "deep",
         "dungeon"
     ],
-    "RepoUrl": "https://github.com/Jukkales/NecroLens",
-    "IconUrl": "https://github.com/Jukkales/NecroLens/raw/main/icon.png"
+    "RepoUrl": "https://github.com/Lother/NecroLens",
+    "IconUrl": "https://raw.githubusercontent.com/Lother/DalamudPluginsTC/main/icons/NecroLens.png"
 }
