@@ -97,6 +97,9 @@
   <data name="ConfigWindow_Title" xml:space="preserve">
     <value>NecroLens 設定</value>
   </data>
+  <data name="ConfigWindow_LocalizationHelp" xml:space="preserve">
+    <value>想協助翻譯嗎？</value>
+  </data>
   <data name="ConfigWindow_ESPTab_ShowPlayerDot" xml:space="preserve">
     <value>顯示玩家判定點</value>
   </data>

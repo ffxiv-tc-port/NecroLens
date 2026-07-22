@@ -74,7 +74,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         ImGui.Spacing();
         ImGui.SameLine();
         
-        if (ImGui.Button("想協助翻譯嗎？"))
+        if (ImGui.Button(Strings.ConfigWindow_LocalizationHelp))
             Process.Start(new ProcessStartInfo
                               { FileName = "https://crowdin.com/project/necrolens", UseShellExecute = true });
         if (ImGui.BeginTabBar("MyTabBar", ImGuiTabBarFlags.None))

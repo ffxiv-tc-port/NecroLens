@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ConfigWindow_LocalizationHelp" xml:space="preserve">
+    <value>Want to help with localization?</value>
+  </data>
   <data name="ConfigWindow_Tab_General" xml:space="preserve">
     <value>General</value>
   </data>

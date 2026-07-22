@@ -550,6 +550,15 @@ namespace NecroLens.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Want to help with localization?.
+        /// </summary>
+        internal static string ConfigWindow_LocalizationHelp {
+            get {
+                return ResourceManager.GetString("ConfigWindow_LocalizationHelp", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to General.
         /// </summary>
         internal static string ConfigWindow_Tab_General {
