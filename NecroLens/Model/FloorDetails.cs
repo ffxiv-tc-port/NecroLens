@@ -156,11 +156,11 @@ public partial class FloorDetails
     public void TrackFloorObjects(ESPObject espObj, int currentContentId)
     {
         if (FloorTransfer
-            || IsIgnored(espObj.GameObject.BaseId)
+            || IsIgnored(espObj.GameObject.DataId)
             || FloorObjects.ContainsKey(espObj.GameObject.EntityId)) return;
 
         var obj = new FloorObject();
-        obj.DataId = espObj.GameObject.BaseId;
+        obj.DataId = espObj.GameObject.DataId;
         if (espObj.GameObject is IBattleNpc npcObj)
         {
             obj.NameId = npcObj.NameId;

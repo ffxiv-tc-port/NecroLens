@@ -21,9 +21,6 @@ public class PluginService
     public static IClientState ClientState { get; private set; } = null!;
 
     [PluginService]
-    public static IPlayerState PlayerState { get; private set; } = null!;
-
-    [PluginService]
     public static ICommandManager CommandManager { get; private set; } = null!;
 
     [PluginService]

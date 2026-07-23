@@ -192,8 +192,8 @@ public class ESPService : IDisposable
                !(Condition[ConditionFlag.LoggingOut] ||
                  Condition[ConditionFlag.BetweenAreas] ||
                  Condition[ConditionFlag.BetweenAreas51]) &&
-                 ObjectTable.LocalPlayer != null &&
-                 PlayerState.ContentId > 0
+                 ClientState.LocalPlayer != null &&
+                 ClientState.LocalContentId > 0
                 && DeepDungeonUtil.InDeepDungeon;
     }
 
@@ -218,7 +218,7 @@ public class ESPService : IDisposable
 
                         var espObj = new ESPObject(obj, mobInfo);
                         
-                        if (obj.BaseId == DataIds.GoldChest 
+                        if (obj.DataId == DataIds.GoldChest
                             && DungeonService.FloorDetails.DoubleChests.TryGetValue(obj.EntityId, out var value))
                         {
                             espObj.ContainingPomander = value;
@@ -230,8 +230,8 @@ public class ESPService : IDisposable
                         DungeonService.TrackFloorObjects(espObj);
                     }
 
-                    if (ObjectTable.LocalPlayer != null &&
-                        PlayerState.EntityId == obj.EntityId)
+                    if (ClientState.LocalPlayer != null &&
+                        ClientState.LocalPlayer.EntityId == obj.EntityId)
                         entityList.Add(new ESPObject(obj));
                 }
 

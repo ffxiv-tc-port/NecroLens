@@ -29,7 +29,7 @@ public class ESPTestService : IDisposable
         if (ShouldDraw())
         {
             var drawList = ImGui.GetBackgroundDrawList();
-            var player = ObjectTable.LocalPlayer;
+            var player = ClientState.LocalPlayer;
             var espObject = new ESPObject(player!);
 
             var onScreen = GameGui.WorldToScreen(player!.Position, out _);
@@ -51,7 +51,7 @@ public class ESPTestService : IDisposable
         return !(Condition[ConditionFlag.LoggingOut] ||
                  Condition[ConditionFlag.BetweenAreas] ||
                  Condition[ConditionFlag.BetweenAreas51]) &&
-               ObjectTable.LocalPlayer != null &&
-               PlayerState.ContentId > 0 && ObjectTable.Length > 0;
+               ClientState.LocalPlayer != null &&
+               ClientState.LocalContentId > 0 && ObjectTable.Length > 0;
     }
 }
