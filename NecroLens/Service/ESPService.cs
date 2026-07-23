@@ -7,7 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using NecroLens.Model;
 using NecroLens.util;
 using static NecroLens.util.ESPUtils;
@@ -46,7 +46,7 @@ public class ESPService : IDisposable
     /**
      * Clears the drawable GameObjects on MapChange.
      */
-    private void OnCleanup(ushort e)
+    private void OnCleanup(uint e)
     {
         Monitor.Enter(mapObjects);
         mapObjects.Clear();
@@ -150,7 +150,7 @@ public class ESPService : IDisposable
 
         if (Config.ShowMobViews &&
             (type == ESPObject.ESPType.Enemy || type == ESPObject.ESPType.Mimic) &&
-            BattleNpcSubKind.Enemy.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
+            BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
             !espObject.InCombat())
         {
             if (conf.ShowPatrolArrow && espObject.IsPatrol())
@@ -192,8 +192,8 @@ public class ESPService : IDisposable
                !(Condition[ConditionFlag.LoggingOut] ||
                  Condition[ConditionFlag.BetweenAreas] ||
                  Condition[ConditionFlag.BetweenAreas51]) &&
-                 ClientState.LocalPlayer != null &&
-                 ClientState.LocalContentId > 0
+                 ObjectTable.LocalPlayer != null &&
+                 PlayerState.ContentId > 0
                 && DeepDungeonUtil.InDeepDungeon;
     }
 
@@ -218,7 +218,7 @@ public class ESPService : IDisposable
 
                         var espObj = new ESPObject(obj, mobInfo);
                         
-                        if (obj.DataId == DataIds.GoldChest 
+                        if (obj.BaseId == DataIds.GoldChest 
                             && DungeonService.FloorDetails.DoubleChests.TryGetValue(obj.EntityId, out var value))
                         {
                             espObj.ContainingPomander = value;
@@ -230,8 +230,8 @@ public class ESPService : IDisposable
                         DungeonService.TrackFloorObjects(espObj);
                     }
 
-                    if (ClientState.LocalPlayer != null &&
-                        ClientState.LocalPlayer!.EntityId == obj.EntityId)
+                    if (ObjectTable.LocalPlayer != null &&
+                        PlayerState.EntityId == obj.EntityId)
                         entityList.Add(new ESPObject(obj));
                 }
 

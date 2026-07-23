@@ -221,7 +221,7 @@ public class DeepDungeonService : IDisposable
 
     internal unsafe void TryInteract(ESPObject espObj)
     {
-        var player = ClientState.LocalPlayer!;
+        var player = ObjectTable.LocalPlayer!;
         if ((player.StatusFlags & StatusFlags.InCombat) == 0 && conf.OpenChests && espObj.IsChest())
         {
             var type = espObj.Type;
@@ -249,7 +249,7 @@ public class DeepDungeonService : IDisposable
         foreach (var obj in ObjectTable)
             if (obj.IsValid())
             {
-                var dataId = obj.DataId;
+                var dataId = obj.BaseId;
                 if (DataIds.BronzeChestIDs.Contains(dataId) || DataIds.SilverChest == dataId ||
                     DataIds.GoldChest == dataId || DataIds.AccursedHoardCoffer == dataId)
                 {

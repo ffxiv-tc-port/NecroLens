@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game;
 using NecroLens.Data;
 using NecroLens.Model;

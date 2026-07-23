@@ -79,9 +79,9 @@ public class ESPObject
         // No MobInfo? Must be an other object
         else
         {
-            var dataId = gameObject.DataId;
+            var dataId = gameObject.BaseId;
 
-            if (clientState.LocalPlayer != null && clientState.LocalPlayer.EntityId == gameObject.EntityId)
+            if (objectTable.LocalPlayer != null && objectTable.LocalPlayer.EntityId == gameObject.EntityId)
                 Type = ESPType.Player;
             else if (DataIds.BronzeChestIDs.Contains(dataId))
                 Type = ESPType.BronzeChest;
@@ -154,7 +154,7 @@ public class ESPObject
         // heavenly onmitsu exists twice, one partol one not. Only DataId differs
         if (mobInfo != null && mobInfo.Id == 7305)
         {
-            return GameObject.DataId == 8922;
+            return GameObject.BaseId == 8922;
         }
 
         return mobInfo?.Patrol ?? false;
@@ -174,7 +174,7 @@ public class ESPObject
 
     public float Distance()
     {
-        return clientState.LocalPlayer != null ? GameObject.Position.Distance2D(clientState.LocalPlayer.Position) : 0;
+        return objectTable.LocalPlayer != null ? GameObject.Position.Distance2D(objectTable.LocalPlayer.Position) : 0;
     }
 
     public bool IsChest()
@@ -262,7 +262,7 @@ public class ESPObject
         if (IsBossOrAdd()) return "";
 
         // No name for all "Enemies" (default type) which are not hostile
-        if (Type == ESPType.Enemy && !BattleNpcSubKind.Enemy.Equals((BattleNpcSubKind)GameObject.SubKind))
+        if (Type == ESPType.Enemy && !BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)GameObject.SubKind))
             return "";
 
         var name = "";
@@ -272,7 +272,7 @@ public class ESPObject
 
         name += Type switch
         {
-            ESPType.Trap => DataIds.TrapIDs.TryGetValue(GameObject.DataId, out var value)
+            ESPType.Trap => DataIds.TrapIDs.TryGetValue(GameObject.BaseId, out var value)
                                 ? value
                                 : Strings.Traps_Unknown,
             ESPType.AccursedHoard => Strings.Chest_Accursed_Hoard,
@@ -292,7 +292,7 @@ public class ESPObject
 
         if (Config.ShowDebugInformation)
         {
-            name += "\nD:" + GameObject.DataId;
+            name += "\nD:" + GameObject.BaseId;
             if (GameObject is IBattleNpc npc2) name += " N:" + npc2.NameId;
         }
 
