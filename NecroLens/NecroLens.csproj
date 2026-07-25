@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/12.0.2">
     <PropertyGroup>
-        <Authors>Jukka, Lother</Authors>
+        <Authors>Jukka</Authors>
         <Description>NecroLens Dalamud Plugin</Description>
         <PackageProjectUrl>https://github.com/Lother/NecroLens</PackageProjectUrl>
     </PropertyGroup>
