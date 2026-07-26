@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors>Jukka</Authors>
         <Description>NecroLens Dalamud Plugin</Description>
-        <PackageProjectUrl>https://github.com/Lother/NecroLens</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/ffxiv-tc-port/NecroLens</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
