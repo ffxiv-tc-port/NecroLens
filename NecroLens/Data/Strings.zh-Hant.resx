@@ -300,6 +300,9 @@
   <data name="PluginCommands_OpenChest_Help" xml:space="preserve">
     <value>嘗試開啟你附近的寶箱。</value>
   </data>
+  <data name="PluginCommands_Pomander_Help" xml:space="preserve">
+    <value>嘗試使用指定名稱的魔陶器</value>
+  </data>
   <data name="MainWindow_OpenChestButton_Help" xml:space="preserve">
     <value>嘗試開啟離你最近的寶箱。</value>
   </data>

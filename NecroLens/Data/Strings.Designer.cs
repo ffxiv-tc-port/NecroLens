@@ -785,7 +785,16 @@ namespace NecroLens.Data {
                 return ResourceManager.GetString("PluginCommands_OpenChest_Help", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Try to use the pomander with given name.
+        /// </summary>
+        internal static string PluginCommands_Pomander_Help {
+            get {
+                return ResourceManager.GetString("PluginCommands_Pomander_Help", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Opens the configuration..
         /// </summary>

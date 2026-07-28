@@ -40,6 +40,10 @@ public sealed class NecroLens : IDalamudPlugin
 
         Config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
+        // 指令的 HelpMessage 在 PluginCommands 建構當下就從 resx 取值並固定下來,
+        // 語系必須在那之前套用,否則 /xlhelp 與插件安裝器的指令清單會落回英文。
+        ApplyUiCulture();
+
         pluginCommands = new PluginCommands();
         configWindow = new ConfigWindow();
         mainWindow = new MainWindow();
@@ -59,7 +63,10 @@ public sealed class NecroLens : IDalamudPlugin
 #endif
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += ShowConfigWindow;
+    }
 
+    private static void ApplyUiCulture()
+    {
         if (Config.Language == "")
         {
             CultureInfo.DefaultThreadCurrentUICulture = ClientState.ClientLanguage switch
