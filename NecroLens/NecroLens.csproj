@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+<Project Sdk="Dalamud.NET.Sdk/13.0.0">
     <PropertyGroup>
         <Authors>Jukka</Authors>
         <Description>NecroLens Dalamud Plugin</Description>
@@ -21,7 +21,7 @@
     </Target>
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows7.0</TargetFramework>
+        <TargetFramework>net9.0-windows7.0</TargetFramework>
         <Platforms>x64</Platforms>
         <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
         <Nullable>enable</Nullable>
@@ -48,7 +48,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ECommons" Version="3.0.1.15" />
+        <!-- 3.0.1.15 是 API14/global 世代的二進位套件,其 Svc 服務定位器與 API13 Dalamud 不相容;
+             3.0.0.18-api13 才是 API13 世代對應版本(Svc 已移除 IGameNetwork 注入、改用
+             Dalamud.Bindings.ImGui),與 fleet 其他外掛一致。 -->
+        <PackageReference Include="ECommons" Version="3.0.0.18-api13" />
     </ItemGroup>
 
     <ItemGroup>
