@@ -82,8 +82,11 @@ public static class DeepDungeonUtil
         }
 
         var sheet = DataManager.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonItem>()!;
+        // TC 的 DeepDungeonItem 把名稱放在 Name，Singular 欄位 39 列全是空字串
+        // （已對實機 sqpack 查證）。原本比對 Singular，在台服永遠找不到任何魔陶器，
+        // 等於 /pomander <名稱> 整個指令失效。改用 Name，其他語系的 Name 也有值。
         var matches = sheet.Where(e => e.RowId is > 0 and < 23 or > 36)
-                           .Where(e => e.Singular.ToString().Contains(name, StringComparison.OrdinalIgnoreCase))
+                           .Where(e => e.Name.ToString().Contains(name, StringComparison.OrdinalIgnoreCase))
                            .ToList();
 
         if (matches.Count > 1)
