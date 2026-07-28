@@ -4,10 +4,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Timers;
 using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Game.Network;
+using Dalamud.Hooking;
 using ECommons.Automation;
 using ECommons.Automation.NeoTaskManager;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Network;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -21,7 +22,7 @@ namespace NecroLens.Service;
 /**
  * Tracks the progress when inside a DeepDungeon.
  */
-public class DeepDungeonService : IDisposable
+public unsafe class DeepDungeonService : IDisposable
 {
     private readonly Configuration conf;
     private readonly Timer floorTimer;
@@ -33,9 +34,17 @@ public class DeepDungeonService : IDisposable
     public readonly FloorDetails FloorDetails;
     public readonly Dictionary<Pomander, string> PomanderNames;
 
+    /**
+     * API13 起 Dalamud 移除了 IGameNetwork 服務,改為自行掛鉤 PacketDispatcher.OnReceivePacket,
+     * 這正是 Dalamud 內部用來產生 ZoneDown 封包事件的同一個位址。
+     */
+    private readonly Hook<PacketDispatcher.Delegates.OnReceivePacket> onReceivePacketHook;
+
     public DeepDungeonService()
     {
-        GameNetwork.NetworkMessage += NetworkMessage;
+        onReceivePacketHook = GameInteropProvider.HookFromAddress<PacketDispatcher.Delegates.OnReceivePacket>(
+            (nint)PacketDispatcher.StaticVirtualTablePointer->OnReceivePacket, OnReceivePacketDetour);
+        onReceivePacketHook.Enable();
 
         FloorTimes = new Dictionary<int, int>();
         floorTimer = new Timer();
@@ -58,7 +67,8 @@ public class DeepDungeonService : IDisposable
 
     public void Dispose()
     {
-        GameNetwork.NetworkMessage -= NetworkMessage;
+        onReceivePacketHook.Disable();
+        onReceivePacketHook.Dispose();
     }
 
     private void EnterDeepDungeon(int contentId, DeepDungeonContentInfo.DeepDungeonFloorSetInfo info)
@@ -115,11 +125,29 @@ public class DeepDungeonService : IDisposable
         FloorTimes[FloorDetails.CurrentFloor] = time;
     }
 
-    private void NetworkMessage(
-        IntPtr dataPtr, ushort opCode, uint sourceActorId, uint targetActorId, NetworkMessageDirection direction)
+    /**
+     * PacketDispatcher.OnReceivePacket 的 detour。此路徑本身就只有 ZoneDown 封包會經過,
+     * 因此不再需要原本的 direction 過濾。封包解析位移比照 Dalamud GameNetwork 的實作。
+     */
+    private void OnReceivePacketDetour(PacketDispatcher* dispatcher, uint targetId, IntPtr packetPtr)
     {
-        if (direction != NetworkMessageDirection.ZoneDown) return;
+        try
+        {
+            // packetPtr 指到封包標頭往後 0x10 處,先退回標頭起點
+            var headerPtr = packetPtr - 0x10;
+            var opCode = (ushort)Marshal.ReadInt16(headerPtr, 0x12);
+            HandleZoneDownPacket(headerPtr + 0x20, opCode);
+        }
+        catch (Exception ex)
+        {
+            PluginLog.Error(ex, "處理 OnReceivePacket 時發生例外");
+        }
 
+        onReceivePacketHook.Original(dispatcher, targetId, packetPtr);
+    }
+
+    private void HandleZoneDownPacket(IntPtr dataPtr, ushort opCode)
+    {
         switch (opCode)
         {
             case (ushort)ServerZoneIpcType.SystemLogMessage:
