@@ -260,7 +260,7 @@ public class ESPObject
         if (IsBossOrAdd()) return "";
 
         // No name for all "Enemies" (default type) which are not hostile
-        if (Type == ESPType.Enemy && !BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)GameObject.SubKind))
+        if (Type == ESPType.Enemy && !BattleNpcSubKind.Enemy.Equals((BattleNpcSubKind)GameObject.SubKind))
             return "";
 
         var name = "";

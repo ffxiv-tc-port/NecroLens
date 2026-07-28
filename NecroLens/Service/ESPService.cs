@@ -46,7 +46,7 @@ public class ESPService : IDisposable
     /**
      * Clears the drawable GameObjects on MapChange.
      */
-    private void OnCleanup(uint e)
+    private void OnCleanup(ushort e)
     {
         Monitor.Enter(mapObjects);
         mapObjects.Clear();
@@ -150,7 +150,7 @@ public class ESPService : IDisposable
 
         if (Config.ShowMobViews &&
             (type == ESPObject.ESPType.Enemy || type == ESPObject.ESPType.Mimic) &&
-            BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
+            BattleNpcSubKind.Enemy.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
             !espObject.InCombat())
         {
             if (conf.ShowPatrolArrow && espObject.IsPatrol())
