@@ -895,6 +895,42 @@ namespace NecroLens.Data {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Traps.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_Traps {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_Traps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Mimic coffers.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_MimicCoffer {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_MimicCoffer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Passage label.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_PassageName {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_PassageName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Return point.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_Return {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_Return", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Give a pomander name like &apos;/pomander Safety&apos;, or just part of one like &apos;/pomander saf&apos;.
         /// </summary>
         internal static string Pomander_NeedName {

@@ -347,6 +347,18 @@
   <data name="ConfigWindow_Language_default" xml:space="preserve">
       <value>客戶端語言</value>
   </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Traps" xml:space="preserve">
+    <value>陷阱</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_MimicCoffer" xml:space="preserve">
+    <value>模仿怪寶箱</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PassageName" xml:space="preserve">
+    <value>傳送裝置名稱</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Return" xml:space="preserve">
+    <value>回程裝置</value>
+  </data>
   <data name="Pomander_NeedName" xml:space="preserve">
     <value>請指定魔陶器名稱,例如 /pomander 咒印解除,也可以只打一部分,例如 /pomander 咒印</value>
   </data>

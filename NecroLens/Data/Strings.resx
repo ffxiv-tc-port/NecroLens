@@ -406,6 +406,18 @@ It helps me to identify problems faster.</value>
   <data name="ConfigWindow_Language_default" xml:space="preserve">
       <value>Client-Language</value>
   </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Traps" xml:space="preserve">
+    <value>Traps</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_MimicCoffer" xml:space="preserve">
+    <value>Mimic coffers</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PassageName" xml:space="preserve">
+    <value>Passage label</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Return" xml:space="preserve">
+    <value>Return point</value>
+  </data>
   <data name="Pomander_NeedName" xml:space="preserve">
     <value>Give a pomander name like '/pomander Safety', or just part of one like '/pomander saf'</value>
   </data>

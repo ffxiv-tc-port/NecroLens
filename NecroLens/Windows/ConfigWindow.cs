@@ -331,6 +331,37 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
             Config.Save();
         }
 
+        // 以下四項原本只有設定檔欄位、沒有任何介面開關,一律強制顯示。
+        // 陷阱與模仿怪寶箱和 PalacePal 的顯示重疊(它有歷史記錄資料庫),
+        // 沒有開關就沒辦法把這兩項讓給 PalacePal,因此補上。
+        var showTraps = conf.ShowTraps;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Traps, ref showTraps))
+        {
+            conf.ShowTraps = showTraps;
+            Config.Save();
+        }
+
+        var showMimicCoffer = conf.ShowMimicCoffer;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_MimicCoffer, ref showMimicCoffer))
+        {
+            conf.ShowMimicCoffer = showMimicCoffer;
+            Config.Save();
+        }
+
+        var showPassageName = conf.ShowPassage;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_PassageName, ref showPassageName))
+        {
+            conf.ShowPassage = showPassageName;
+            Config.Save();
+        }
+
+        var showReturn = conf.ShowReturn;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Return, ref showReturn))
+        {
+            conf.ShowReturn = showReturn;
+            Config.Save();
+        }
+
         ImGui.Unindent(15);
 
         ImGui.Separator();
