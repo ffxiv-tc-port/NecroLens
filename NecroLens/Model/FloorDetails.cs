@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -14,7 +13,7 @@ using static NecroLens.util.DeepDungeonUtil;
 
 namespace NecroLens.Model;
 
-public partial class FloorDetails
+public class FloorDetails
 {
     public readonly Dictionary<uint, Pomander> DoubleChests = new();
     private readonly List<Pomander> floorEffects = [];
@@ -30,9 +29,6 @@ public partial class FloorDetails
     public DateTime NextRespawn;
 
     public int RespawnTime;
-
-    [GeneratedRegex("\\d+")]
-    private static partial Regex FloorNumber();
 
     public void Clear()
     {
@@ -77,29 +73,25 @@ public partial class FloorDetails
         }
     }
 
-    public unsafe void VerifyFloorNumber()
-    {
-        if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon))
-        {
-            var floorText = addon->GetNodeById(26)->ChildNode->PrevSiblingNode->GetAsAtkTextNode()->NodeText.ToString();
-            var floor = int.Parse(FloorNumber().Match(floorText).Value);
-            if (CurrentFloor != floor)
-            {
-                PluginLog.Information("Floor number mismatch - adjusting");
-                CurrentFloor = floor;
-            }
-
-            FloorVerified = true;
-        }
-    }
-
+    /**
+     * 樓層數不再靠解析 DeepDungeonMap 視窗的文字節點(那條路徑會因為版本/語系不同而
+     * 走空指標或 int.Parse 失敗)。現在由 DeepDungeonService 直接寫入
+     * InstanceContentDeepDungeon.Floor 的值。
+     */
     public unsafe int PassageProgress()
     {
-        if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) && IsAddonReady(addon))
+        try
         {
-            var key = addon->GetNodeById(16)->ChildNode->PrevSiblingNode;
-            var image = key->GetAsAtkComponentNode()->Component->UldManager.NodeList[1]->GetAsAtkImageNode();
-            return image->PartId * 10;
+            if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) && IsAddonReady(addon))
+            {
+                var key = addon->GetNodeById(16)->ChildNode->PrevSiblingNode;
+                var image = key->GetAsAtkComponentNode()->Component->UldManager.NodeList[1]->GetAsAtkImageNode();
+                return image->PartId * 10;
+            }
+        }
+        catch (Exception e)
+        {
+            PluginLog.Debug(e, "讀取傳送點進度失敗");
         }
 
         return 0;

@@ -347,4 +347,31 @@
   <data name="ConfigWindow_Language_default" xml:space="preserve">
       <value>客戶端語言</value>
   </data>
+  <data name="Pomander_NeedName" xml:space="preserve">
+    <value>請指定魔陶器名稱,例如 /pomander 咒印解除,也可以只打一部分,例如 /pomander 咒印</value>
+  </data>
+  <data name="Pomander_MultipleMatches" xml:space="preserve">
+    <value>「{0}」對應到多個魔陶器,請輸入更完整的名稱。</value>
+  </data>
+  <data name="Pomander_NoMatches" xml:space="preserve">
+    <value>找不到符合「{0}」的魔陶器。</value>
+  </data>
+  <data name="Pomander_NotInDeepDungeon" xml:space="preserve">
+    <value>魔陶器只能在深層迷宮內使用。</value>
+  </data>
+  <data name="Pomander_ItemPenalty" xml:space="preserve">
+    <value>無法使用:目前處於物品限制狀態。</value>
+  </data>
+  <data name="Pomander_NotInThisDungeon" xml:space="preserve">
+    <value>{0}無法在這個深層迷宮使用。</value>
+  </data>
+  <data name="Pomander_NoneHeld" xml:space="preserve">
+    <value>目前沒有持有{0}。</value>
+  </data>
+  <data name="Pomander_NotUsableNow" xml:space="preserve">
+    <value>{0}現在無法使用。</value>
+  </data>
+  <data name="Pomander_Using" xml:space="preserve">
+    <value>使用{0}</value>
+  </data>
 </root>

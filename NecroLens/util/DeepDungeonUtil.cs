@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
+using NecroLens.Data;
 using NecroLens.Model;
 
 namespace NecroLens.util;
@@ -27,7 +29,7 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Can only be used in DeepDungeon");
+            PrintChatMessage(Strings.Pomander_NotInDeepDungeon);
             return false;
         }
 
@@ -40,7 +42,7 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Unable to use: Item Penalty active");
+            PrintChatMessage(Strings.Pomander_ItemPenalty);
             return false;
         }
 
@@ -65,7 +67,8 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Unable to use: Pomander not usable in current Deep Dungeon");
+            var name = DungeonService.PomanderNames.GetValueOrDefault(pomander, pomander.ToString());
+            PrintChatMessage(string.Format(Strings.Pomander_NotInThisDungeon, name));
             return false;
         }
 
@@ -77,7 +80,7 @@ public static class DeepDungeonUtil
         pomander = default;
         if (name.IsNullOrEmpty())
         {
-            PrintChatMessage($"Define a pomander name like '/pomander Safety' or even a part of the name like '/pomander saf'");
+            PrintChatMessage(Strings.Pomander_NeedName);
             return false;
         }
 
@@ -91,14 +94,14 @@ public static class DeepDungeonUtil
 
         if (matches.Count > 1)
         {
-            PrintChatMessage($"Multiple matches found for '{name}' please be more specific.");
+            PrintChatMessage(string.Format(Strings.Pomander_MultipleMatches, name));
         }
         else if (!matches.Any())
         {
             // Nothing found? Try match with enum
             if (!Enum.TryParse(name, true, out pomander))
             {
-                PrintChatMessage($"No matches found for '{name}'.");
+                PrintChatMessage(string.Format(Strings.Pomander_NoMatches, name));
             }
         }
         else

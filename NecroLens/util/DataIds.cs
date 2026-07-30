@@ -6,13 +6,16 @@ namespace NecroLens.util;
 public static class DataIds
 {
     /////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Network IDs
-    public const uint SystemLogPomanderUsed = 0x1C56;
-    public const uint SystemLogDutyEnded = 0x5FE;
-    public const uint SystemLogTransferenceInitiated = 0x1C50;
-    public const uint ActorControlSelfDirectorUpdate = 0x6D;
-    public const int DirectorUpdateDutyCommenced = 0x1;
-    public const int DirectorUpdateDutyRecommenced = 0x6;
+    // LogMessage 資料表列號。
+    // 注意:這些是 Excel 列號,不是封包 opcode —— 列號跨改版穩定,而且各語系都取得到在地化文字,
+    // 所以能用「比對系統訊息內文」的方式偵測,不必解析封包。已對台服 7.20 的 LogMessage 表查證。
+    // 其餘原本靠封包分派的事件(進入/離開、換層、魔陶器使用)已改由
+    // InstanceContentDeepDungeon 結構輪詢取得,不再需要對應的列號。
+    public const uint LogHoardDiscovered = 7274;     // 發現了埋藏的寶藏!
+    public const uint LogHoardObtained = 7275;       // 獲得了埋藏的寶藏!
+    public const uint LogHoardObtainedByOther = 7276; // 等人獲得了埋藏的寶藏!
+    public const uint LogItemCappedPotd = 7222;      // 無法獲得更多的◯◯了。被重新放回了寶箱中……
+    public const uint LogItemCappedEo = 9208;        // 同上,正統優雷卡用的變體
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // DataIds of Objects
