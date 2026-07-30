@@ -124,12 +124,19 @@ public class ESPService : IDisposable
 
             if (espObject.IsChest())
             {
-                if (!conf.ShowBronzeCoffers && type == ESPObject.ESPType.BronzeChest) return;
-                if (!conf.ShowSilverCoffers && type == ESPObject.ESPType.SilverChest) return;
-                if (!conf.ShowGoldCoffers && type == ESPObject.ESPType.GoldChest) return;
-                if (!conf.ShowHoards && type == ESPObject.ESPType.AccursedHoardCoffer) return;
+                var highlightThisCoffer = type switch
+                {
+                    ESPObject.ESPType.BronzeChest => conf.ShowBronzeCoffers,
+                    ESPObject.ESPType.SilverChest => conf.ShowSilverCoffers,
+                    ESPObject.ESPType.GoldChest => conf.ShowGoldCoffers,
+                    ESPObject.ESPType.AccursedHoardCoffer => conf.ShowHoards,
+                    _ => true
+                };
 
-                if (distance <= 35 && conf.HighlightCoffers)
+                // 「寶箱高亮」與「可互動範圍圈」分開判斷。
+                // 這樣才能把寶箱高亮讓給 PalacePal(它有歷史記錄資料庫)、
+                // 同時保留 NecroLens 獨有的可互動距離提示,兩邊不會重複畫同一個圈。
+                if (highlightThisCoffer && distance <= 35 && conf.HighlightCoffers)
                     DrawCircleFilled(drawList, espObject, 1f, espObject.RenderColor(), 1f);
                 if (distance <= 10 && conf.ShowCofferInteractionRange)
                     DrawInteractionCircle(drawList, espObject, espObject.InteractionDistance());
