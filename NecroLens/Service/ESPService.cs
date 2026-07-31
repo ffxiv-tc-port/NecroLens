@@ -247,6 +247,20 @@ public class ESPService : IDisposable
                 mapObjects.AddRange(entityList);
                 Monitor.Exit(mapObjects);
             }
+            else
+            {
+                // ShouldDraw() 為 false 時也要清空。
+                // mapObjects 內的 ESPObject 持有 IGameObject,而 Dalamud 的
+                // GameObject.Address 建構時就凍結、永不重新解析,所以那是一份
+                // 只在「當幀」有效的原生指標快照。
+                // 原本這裡不清空,等於讓陳舊快照留著,只靠「繪製端 OnUpdate 的
+                // ShouldDraw() 與這裡同幀一致」來保證不會被畫出來——那個前提
+                // 無法離線證明,而它不成立的後果是解參考已釋放的位址(攔不到的
+                // AccessViolation)。直接清空就不必依賴那個前提。
+                Monitor.Enter(mapObjects);
+                mapObjects.Clear();
+                Monitor.Exit(mapObjects);
+            }
         }
         catch (Exception e)
         {
