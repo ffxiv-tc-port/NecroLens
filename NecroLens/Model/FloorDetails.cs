@@ -80,21 +80,46 @@ public class FloorDetails
      */
     public unsafe int PassageProgress()
     {
-        try
-        {
-            if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) && IsAddonReady(addon))
-            {
-                var key = addon->GetNodeById(16)->ChildNode->PrevSiblingNode;
-                var image = key->GetAsAtkComponentNode()->Component->UldManager.NodeList[1]->GetAsAtkImageNode();
-                return image->PartId * 10;
-            }
-        }
-        catch (Exception e)
-        {
-            PluginLog.Debug(e, "讀取傳送點進度失敗");
-        }
+        // 這條路徑每幀都會被 MainWindow 呼叫。原生指標只在這次呼叫內使用、不跨幀保存,
+        // 每一跳都做 null 與型別檢查,任何一跳失敗就回傳 0(畫面顯示為「未開啟」)。
+        // 刻意不使用 try/catch:懸空指標造成的 AccessViolationException 在 .NET Core 屬於
+        // corrupted-state exception,try/catch 完全攔不到,加了只會製造假的安全感。
+        if (!TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) || !IsAddonReady(addon))
+            return 0;
 
-        return 0;
+        // 不倚賴 IsAddonReady 的內部實作,自己再確認一次 uld 已載入完成;
+        // 未載入完成時 NodeList / NodeListCount 可能未初始化或已失效。
+        if (addon->UldManager.LoadedState != AtkLoadState.Loaded)
+            return 0;
+
+        var container = addon->GetNodeById(16);
+        if (container == null)
+            return 0;
+
+        var child = container->ChildNode;
+        if (child == null)
+            return 0;
+
+        var key = child->PrevSiblingNode;
+        // AtkResNode 的結構大小是 0xB0,而 AtkComponentNode.Component 位在 0xB0,
+        // 少了 Type 檢查(component 節點一律 >= 1000)就會讀到配置範圍外的記憶體。
+        if (key == null || (int)key->Type < 1000)
+            return 0;
+
+        var component = ((AtkComponentNode*)key)->Component;
+        if (component == null || component->UldManager.LoadedState != AtkLoadState.Loaded)
+            return 0;
+
+        // 存取 NodeList[1] 之前必須先驗上界,原本的寫法缺這個檢查。
+        ref var uld = ref component->UldManager;
+        if (uld.NodeList == null || uld.NodeListCount <= 1)
+            return 0;
+
+        var imageNode = uld.NodeList[1];
+        if (imageNode == null || imageNode->Type != NodeType.Image)
+            return 0;
+
+        return ((AtkImageNode*)imageNode)->PartId * 10;
     }
 
     public void OnPomanderUsed(Pomander pomander)
