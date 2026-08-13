@@ -72,6 +72,23 @@ public class ESPObject
                     this.mobInfo.AggroType = mob.AggroType ?? this.mobInfo.AggroType;
                 }
             }
+
+            // 🔴 擬態怪/友方的判定必須在這條分支裡也跑一次,否則天之御柱永遠不會命中。
+            // mobInfo 是 ESPService 用 NameId 去查 Data/allMobs.json 得來的,而天之御柱的擬態怪
+            // (BNpcName 7392-7394「抖動的寶箱」)正好被收錄在那張表裡 —— 於是 mobInfo != null,
+            // 底下那條 else 的整串分類鏈被跳過,Type 永遠停在預設的 Enemy(白色、無擬態怪標記)。
+            // 死者宮殿與正統優雷卡沒踩到,只是因為它們的寶箱 NameId(5057 / 13298)剛好不在
+            // allMobs.json 裡,所以走的是 else 那條路。
+            //
+            // 這裡刻意只補 FriendlyIDs / MimicIDs 兩項,而且只認明確列在那兩個集合裡的 BaseId,
+            // 其餘物件的既有判定完全不受影響。ESPService.DoDrawName() 對 Enemy / Mimic /
+            // FriendlyEnemy 三者的顯示條件相同(都是 !InCombat()),所以這個改動只會換掉顏色與
+            // 圖示,不會讓任何原本畫得出來的東西消失。
+            var battleNpcDataId = gameObject.DataId;
+            if (DataIds.FriendlyIDs.Contains(battleNpcDataId))
+                Type = ESPType.FriendlyEnemy;
+            else if (DataIds.MimicIDs.Contains(battleNpcDataId))
+                Type = ESPType.Mimic;
         }
 
         // No MobInfo? Must be an other object
