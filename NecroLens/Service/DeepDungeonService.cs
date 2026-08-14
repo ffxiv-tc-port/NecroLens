@@ -35,6 +35,13 @@ public unsafe class DeepDungeonService : IDisposable
 {
     private const int PomanderSlotCount = 16;
 
+    /// <summary>
+    /// 遊戲的 chat type 只有低 7 位是「訊息類型」,bit 7~10 是來源、bit 11~14 是目標。
+    /// Dalamud 的 IChatGui.ChatMessage 轉發的是**未遮罩的原始值**,所以比對類型前必須自己遮。
+    /// 同一個修法見 PalacePal 的 Pal.Client/DependencyInjection/ChatService.cs(commit ba6ef15)。
+    /// </summary>
+    private const int ChatTypeMask = 0x7F;
+
     private readonly Configuration conf;
     public readonly Dictionary<int, int> FloorTimes;
     public int CurrentContentId;
@@ -334,11 +341,21 @@ public unsafe class DeepDungeonService : IDisposable
      * 系統訊息處理。只剩兩件事結構裡拿不到:埋藏的寶藏是否已被挖出,
      * 以及金寶箱裡裝的是哪一個魔陶器(「已達上限、放回寶箱」訊息)。
      * 比對字串來自 LogMessage 資料表,語系跟隨客戶端,不牽涉 opcode。
+     *
+     * 🔴 類型閘門必須先遮低 7 位,直接比對 XivChatType.SystemMessage 在 API13 是壞的。
+     * Dalamud 的 ChatGui.HandlePrintMessageDetour 直接 forward 遊戲原始 chat type,高位還帶著
+     * 來源/目標欄位;深宮的系統訊息一律帶 target=PC 的 0x800,實機是 2105 (0x839 = 0x800 | 57),
+     * 與 XivChatType.SystemMessage(57) 永遠不相等 —— 這兩個偵測會**全部靜默失效**。
+     *
+     * 2026-08-15 實機 log 量測(全艦隊掃描 + dalamud.log):本 handler 觸發 0 次,
+     * 同期符合條件的訊息 1743 則;PalacePal 那邊 195 則目標訊息 100% 是 2105,一則裸 57 都沒有
+     * (同批 log 另有 17368 則其他訊息確實以裸 57 送達,所以不是列舉整個壞掉,
+     * 而是專門漏掉帶目標欄位的這一批)。同一個 bug 與修法見 PalacePal commit ba6ef15。
      */
     private void OnChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message,
                                ref bool isHandled)
     {
-        if (!Ready || type != XivChatType.SystemMessage) return;
+        if (!Ready || ((int)type & ChatTypeMask) != (int)XivChatType.SystemMessage) return;
 
         try
         {
@@ -347,7 +364,11 @@ public unsafe class DeepDungeonService : IDisposable
 
             if (hoardTails.Any(tail => text.EndsWith(tail, StringComparison.Ordinal)))
             {
-                PluginLog.Debug("系統訊息:埋藏的寶藏已被發現/取得");
+                // 只在狀態真的翻轉時寫 Information:使用者跑 LogLevel 2,Debug 收不到,
+                // 而這行是「chat type 遮罩修好了」在實機唯一看得見的證據。
+                if (!FloorDetails.HoardFound)
+                    PluginLog.Information("NecroLens:系統訊息回報埋藏的寶藏已被發現/取得。");
+
                 FloorDetails.HoardFound = true;
                 return;
             }
@@ -390,7 +411,10 @@ public unsafe class DeepDungeonService : IDisposable
             return;
         }
 
-        PluginLog.Debug($"金寶箱 {chest.EntityId:X} 裝的是 {match.Value}");
+        // 同上:每個金寶箱最多一次,寫 Information 讓實機 log 收得到。
+        if (!FloorDetails.DoubleChests.ContainsKey(chest.EntityId))
+            PluginLog.Information($"NecroLens:金寶箱 {chest.EntityId:X} 裝的是 {match.Value}。");
+
         FloorDetails.DoubleChests[chest.EntityId] = match.Key;
     }
 
