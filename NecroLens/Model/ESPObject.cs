@@ -48,12 +48,10 @@ public class ESPObject
         Votife,
     }
 
-    private IClientState clientState;
     private MobInfo? mobInfo;
 
     public ESPObject(IGameObject gameObject, MobInfo? mobInfo = null)
     {
-        this.clientState = ClientState;
         ContainingPomander = null;
         GameObject = gameObject;
         this.mobInfo = mobInfo;
@@ -84,7 +82,7 @@ public class ESPObject
             // 其餘物件的既有判定完全不受影響。ESPService.DoDrawName() 對 Enemy / Mimic /
             // FriendlyEnemy 三者的顯示條件相同(都是 !InCombat()),所以這個改動只會換掉顏色與
             // 圖示,不會讓任何原本畫得出來的東西消失。
-            var battleNpcDataId = gameObject.DataId;
+            var battleNpcDataId = gameObject.BaseId;
             if (DataIds.FriendlyIDs.Contains(battleNpcDataId))
                 Type = ESPType.FriendlyEnemy;
             else if (DataIds.MimicIDs.Contains(battleNpcDataId))
@@ -94,9 +92,9 @@ public class ESPObject
         // No MobInfo? Must be an other object
         else
         {
-            var dataId = gameObject.DataId;
+            var dataId = gameObject.BaseId;
 
-            if (clientState.LocalPlayer != null && clientState.LocalPlayer.EntityId == gameObject.EntityId)
+            if (ObjectTable.LocalPlayer != null && ObjectTable.LocalPlayer.EntityId == gameObject.EntityId)
                 Type = ESPType.Player;
             else if (DataIds.BronzeChestIDs.Contains(dataId))
                 Type = ESPType.BronzeChest;
@@ -169,7 +167,7 @@ public class ESPObject
         // heavenly onmitsu exists twice, one partol one not. Only DataId differs
         if (mobInfo != null && mobInfo.Id == 7305)
         {
-            return GameObject.DataId == 8922;
+            return GameObject.BaseId == 8922;
         }
 
         return mobInfo?.Patrol ?? false;
@@ -189,7 +187,7 @@ public class ESPObject
 
     public float Distance()
     {
-        return clientState.LocalPlayer != null ? GameObject.Position.Distance2D(clientState.LocalPlayer.Position) : 0;
+        return ObjectTable.LocalPlayer != null ? GameObject.Position.Distance2D(ObjectTable.LocalPlayer.Position) : 0;
     }
 
     public bool IsChest()
@@ -287,7 +285,7 @@ public class ESPObject
 
         name += Type switch
         {
-            ESPType.Trap => DataIds.TrapIDs.TryGetValue(GameObject.DataId, out var value)
+            ESPType.Trap => DataIds.TrapIDs.TryGetValue(GameObject.BaseId, out var value)
                                 ? value
                                 : Strings.Traps_Unknown,
             ESPType.AccursedHoard => Strings.Chest_Accursed_Hoard,
@@ -307,7 +305,7 @@ public class ESPObject
 
         if (Config.ShowDebugInformation)
         {
-            name += "\nD:" + GameObject.DataId;
+            name += "\nD:" + GameObject.BaseId;
             if (GameObject is IBattleNpc npc2) name += " N:" + npc2.NameId;
         }
 

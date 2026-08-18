@@ -388,7 +388,7 @@ public unsafe class DeepDungeonService : IDisposable
      */
     private void TryRecordDoubleChest(string text)
     {
-        var player = ClientState.LocalPlayer;
+        var player = ObjectTable.LocalPlayer;
         if (player == null) return;
 
         var match = pomanderNamesByLength
@@ -402,7 +402,7 @@ public unsafe class DeepDungeonService : IDisposable
         }
 
         var chest = ObjectTable
-                    .Where(o => o.DataId == DataIds.GoldChest)
+                    .Where(o => o.BaseId == DataIds.GoldChest)
                     .FirstOrDefault(o => o.Position.Distance2D(player.Position) <= 4.6f);
 
         if (chest == null)
@@ -435,7 +435,7 @@ public unsafe class DeepDungeonService : IDisposable
 
     internal void TryInteract(ESPObject espObj)
     {
-        var player = ClientState.LocalPlayer!;
+        var player = ObjectTable.LocalPlayer!;
         if ((player.StatusFlags & StatusFlags.InCombat) == 0 && conf.OpenChests && espObj.IsChest())
         {
             var type = espObj.Type;
@@ -463,7 +463,7 @@ public unsafe class DeepDungeonService : IDisposable
         foreach (var obj in ObjectTable)
             if (obj.IsValid())
             {
-                var dataId = obj.DataId;
+                var dataId = obj.BaseId;
                 if (DataIds.BronzeChestIDs.Contains(dataId) || DataIds.SilverChest == dataId ||
                     DataIds.GoldChest == dataId || DataIds.AccursedHoardCoffer == dataId)
                 {
