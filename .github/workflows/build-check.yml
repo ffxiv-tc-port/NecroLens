@@ -16,6 +16,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      # 🔴 resx 的「鍵存在但值為空」是崩潰級缺陷,不是風格問題:
+      #    ResourceManager 回 "" 而**不會** fallback → ImGui 拿到零長度 span →
+      #    fixed 取指標為 null → igFindRenderedTextEnd 從位址 0 掃 → C0000005。
+      #    「鍵不存在」反而安全(會正常退回中性資源)。
+      #    上游 crowdin 的 "New translations *.resx" 合併會把這種地雷帶回來,
+      #    所以擋在建置之前。腳本純標準函式庫、自帶校準閘門(G1~G7)。
+      - name: Check resx empty values
+        shell: pwsh
+        run: python .github/scripts/check_resx_empty.py
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
