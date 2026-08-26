@@ -1,104 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -117,290 +58,290 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConfigWindow_LocalizationHelp" xml:space="preserve">
-    <value>Want to help with localization?</value>
-  </data>
   <data name="ConfigWindow_Tab_General" xml:space="preserve">
-    <value>General</value>
+    <value>一般</value>
   </data>
   <data name="ConfigWindow_Tab_ESPSettings" xml:space="preserve">
-    <value>ESP Settings</value>
+    <value>ESP 設定</value>
   </data>
   <data name="ConfigWindow_Tab_Chests" xml:space="preserve">
-    <value>Chests</value>
+    <value>寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenChests" xml:space="preserve">
-    <value>Open Chests</value>
+    <value>開啟寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenChests_Details" xml:space="preserve">
-    <value>Automatically opens chest for you once you're in interaction range.
-The plugin only tries to open a chest one time!</value>
+    <value>當你位於寶箱的互動範圍內，外掛將嘗試自動為你開啟一次寶箱！</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenFollowingChests" xml:space="preserve">
-    <value>Open the following chests:</value>
+    <value>開啟以下寶箱：</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenFollowingChests_Bronze" xml:space="preserve">
-    <value>Bronze</value>
+    <value>銅寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenFollowingChests_Silver" xml:space="preserve">
-    <value>Silver</value>
+    <value>銀寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenFollowingChests_Gold" xml:space="preserve">
-    <value>Gold</value>
+    <value>金寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenFollowingChests_Hoards" xml:space="preserve">
-    <value>Hoards</value>
+    <value>埋藏的寶藏</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenUnsafeChests" xml:space="preserve">
-    <value>Open unsafe chests</value>
+    <value>開啟不安全的寶箱</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenUnsafeChests_Details" xml:space="preserve">
-    <value>Even open chests which can be Mimics on the current floor</value>
+    <value>此選項將強制開啟當前樓層中可能是擬態怪的寶箱</value>
   </data>
   <data name="ConfigWindow_Title" xml:space="preserve">
-    <value>NecroLens Configuration</value>
+    <value>NecroLens 設定</value>
+  </data>
+  <data name="ConfigWindow_LocalizationHelp" xml:space="preserve">
+    <value>想協助翻譯嗎？</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowPlayerDot" xml:space="preserve">
-    <value>Show Player Dot</value>
+    <value>顯示玩家判定點</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowPlayerDot_Details" xml:space="preserve">
-    <value>A little dot showing your hit box.</value>
+    <value>以一個小點表示你的碰撞體積</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowAggroRange" xml:space="preserve">
-    <value>Show aggro range</value>
+    <value>顯示引戰範圍</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowAggroRange_Details" xml:space="preserve">
-    <value>Draw sight-, proximity- and sound-range.
-Sound Mobs will also have hit box.</value>
+    <value>繪製怪物的視覺、感應與聽覺範圍。
+聽覺型怪物也會顯示碰撞體積。</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowAggroRange_Proximity_and_Sight" xml:space="preserve">
-    <value>Proximity and Sight</value>
+    <value>感應與視覺範圍</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowAggroRange_Sound" xml:space="preserve">
-    <value>Sound</value>
+    <value>聽覺範圍</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowPatrolArrow" xml:space="preserve">
-    <value>Show Arrow on Patrol</value>
+    <value>顯示巡邏怪物箭頭</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowPatrolArrow_Details" xml:space="preserve">
-    <value>Draw an arrow pointing in movement direction.</value>
+    <value>繪製一個指示箭頭以顯示巡邏怪物的移動方向。</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowCofferInteractionRange" xml:space="preserve">
-    <value>Show interaction range for coffers</value>
+    <value>顯示寶箱的可互動範圍</value>
   </data>
   <data name="ConfigWindow_ESPTab_ShowCofferInteractionRange_Details" xml:space="preserve">
-    <value>Once you approach a treasure coffer a light circle shows up the maximum distance to open.</value>
+    <value>當你接近寶箱時，繪製一個光圈以顯示你能開啟寶箱的最大距離。</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects" xml:space="preserve">
-    <value>Highlight the following objects once near:</value>
+    <value>玩家接近時高亮以下物件：</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects_TreasureChests" xml:space="preserve">
-    <value>Treasure Chests</value>
+    <value>寶箱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects_Passage" xml:space="preserve">
-    <value>Passage</value>
+    <value>傳送裝置</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightTreasureChests" xml:space="preserve">
-    <value>Show the following treasure coffers in the overlay:</value>
+    <value>在疊加層中顯示以下寶箱：</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightTreasureChests_Bronze" xml:space="preserve">
-    <value>Bronze Chests</value>
+    <value>銅寶箱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightTreasureChests_Silver" xml:space="preserve">
-    <value>Silver Chests</value>
+    <value>銀寶箱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightTreasureChests_Gold" xml:space="preserve">
-    <value>Gold Chests</value>
+    <value>金寶箱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightTreasureChests_Hoards" xml:space="preserve">
-    <value>Accursed Hoards</value>
+    <value>埋藏的寶藏</value>
   </data>
   <data name="ConfigWindow_GeneralTab_AutomaticallyOpen" xml:space="preserve">
-    <value>Automatically open in DeepDungeon</value>
+    <value>深層迷宮內自動開啟主視窗</value>
   </data>
   <data name="ConfigWindow_GeneralTab_AutomaticallyOpen_Details" xml:space="preserve">
-    <value>Opens the Main window when you enter a DeepDungeon.
-It shows some handy information and quick access to Settings.</value>
+    <value>當你進入深層迷宮時開啟外掛主視窗。
+此視窗可為你顯示一些便捷資訊，協助你快速存取外掛設定。</value>
   </data>
   <data name="ConfigWindow_GeneralTab_EnableOverlay" xml:space="preserve">
-    <value>Enable ESP Overlay</value>
+    <value>啟用 ESP 疊加層</value>
   </data>
   <data name="ConfigWindow_ChestsTab_OpenChests_EXPERIMENTAL" xml:space="preserve">
-    <value>EXPERIMENTAL</value>
+    <value>實驗性功能</value>
   </data>
   <data name="ConfigWindow_GeneralTab_EnableOverlay_Details" xml:space="preserve">
-    <value>Draws the ESP overlay showing the positions of Chests, Mobs and all aggro ranges.
-You can configure everything you want to see under ESP Settings.
-Important: The ESP can only show objects in the games render distance.
-This is fixed and CAN NOT be changed!</value>
+    <value>繪製 ESP 疊加層，此功能將顯示寶箱、怪物以及它們的引戰範圍。
+你可以在「ESP 設定」頁籤中設定你希望看到的內容。
+注意：ESP 只能顯示遊戲渲染距離內的物件。
+這是固定且無法變更的！</value>
   </data>
   <data name="ConfigWindow_GeneralTab_OpenChests" xml:space="preserve">
-    <value>Enable OpenChests</value>
+    <value>啟用「開啟寶箱」</value>
   </data>
   <data name="ConfigWindow_GeneralTab_OpenChests_Details" xml:space="preserve">
-    <value>EXPERIMENTAL FEATURE
-Automatically opens chest for you once you're in interaction range.
-By default it will NOT open chests which can be Mimics this set!
+    <value>實驗性功能
+當你位於寶箱的互動範圍內時，將自動開啟寶箱。
+預設情況下，此功能不會開啟可能是擬態怪的寶箱！
 
-This feature can cause your character being stuck next to a chest!
-If this happens disable this feature.</value>
+此功能可能導致你卡在寶箱旁邊無法移動！
+如果發生這種情況，請停用此功能。
+</value>
   </data>
   <data name="PluginCommands_OpenOverlay_Help" xml:space="preserve">
-    <value>Opens the main window.</value>
+    <value>開啟外掛主視窗</value>
   </data>
   <data name="PluginCommands_OpenConfig_Help" xml:space="preserve">
-    <value>Opens the configuration.</value>
+    <value>開啟外掛設定視窗</value>
   </data>
   <data name="MainWindow_TrapStatus_Title" xml:space="preserve">
-    <value>Traps:</value>
+    <value>陷阱：</value>
   </data>
   <data name="MainWindow_TrapStatus_Active" xml:space="preserve">
-    <value>Active</value>
+    <value>啟動狀態</value>
   </data>
   <data name="MainWindow_TrapStatus_Visible" xml:space="preserve">
-    <value>Visible</value>
+    <value>可見狀態</value>
   </data>
   <data name="MainWindow_TrapStatus_Inactive" xml:space="preserve">
-    <value>Inactive</value>
+    <value>安全狀態</value>
   </data>
   <data name="MainWindow_PassageStatus_Title" xml:space="preserve">
-    <value>Passage:</value>
+    <value>傳送裝置：</value>
   </data>
   <data name="MainWindow_PassageStatus_Open" xml:space="preserve">
-    <value>Open</value>
+    <value>開啟</value>
   </data>
   <data name="MainWindow_PassageStatus_Closed" xml:space="preserve">
-    <value>Closed</value>
+    <value>關閉</value>
   </data>
   <data name="MainWindow_TimeSet_Title" xml:space="preserve">
-    <value>Times:</value>
+    <value>計時：</value>
   </data>
   <data name="MainWindow_NextFloorMark_ActiveNextFloor" xml:space="preserve">
-    <value>Active on next Floor</value>
+    <value>下一層生效</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Title" xml:space="preserve">
-    <value>Current Floor Effects:</value>
+    <value>本層發動的魔法效果：</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Affluence" xml:space="preserve">
-    <value>Affluence</value>
+    <value>寶箱增加</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Flight" xml:space="preserve">
-    <value>Flight</value>
+    <value>敵人減少</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Alteration" xml:space="preserve">
-    <value>Alteration</value>
+    <value>敵人變化</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Safety" xml:space="preserve">
-    <value>Safety</value>
+    <value>咒印解除</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Sight" xml:space="preserve">
-    <value>Sight</value>
+    <value>全景</value>
   </data>
   <data name="MainWindow_CurrentFloorEffects_Fortune" xml:space="preserve">
-    <value>Fortune</value>
+    <value>幸運提升</value>
   </data>
   <data name="MainWindow_Floor" xml:space="preserve">
-    <value>Floor: {0}</value>
+    <value>層數：{0}</value>
   </data>
   <data name="MainWindow_Respawns" xml:space="preserve">
-    <value>Respawns: {0}</value>
+    <value>怪物重生時間：{0}</value>
   </data>
   <data name="MainWindow_ShowAggro" xml:space="preserve">
-    <value>Show Aggro</value>
+    <value>顯示引戰範圍</value>
   </data>
   <data name="MainWindow_OpenChests" xml:space="preserve">
-    <value>Open Chests</value>
+    <value>開啟寶箱</value>
   </data>
   <data name="MainWindow_OpenChests_Help" xml:space="preserve">
-    <value>Toggle Open Chests respecting your settings.
+    <value>依據你的設定切換是否自動開啟寶箱。
 
-IMPORTANT:
-If you're stuck near a chest and cant move anymore disable this option!</value>
+重要提醒：
+如果你卡在寶箱附近無法移動，請停用此選項！</value>
   </data>
   <data name="Traps_Landmine" xml:space="preserve">
-    <value>Landmine</value>
+    <value>爆炸陷阱</value>
   </data>
   <data name="Traps_Luring_Trap" xml:space="preserve">
-    <value>Luring Trap</value>
+    <value>誘餌陷阱</value>
   </data>
   <data name="Traps_Enfeebling_Trap" xml:space="preserve">
-    <value>Enfeebling Trap</value>
+    <value>弱化陷阱</value>
   </data>
   <data name="Traps_Impeding_Trap" xml:space="preserve">
-    <value>Impeding Trap</value>
+    <value>妨礙陷阱</value>
   </data>
   <data name="Traps_Toad_Trap" xml:space="preserve">
-    <value>Toad Trap</value>
+    <value>蛙變陷阱</value>
   </data>
   <data name="Traps_Odder_Trap" xml:space="preserve">
-    <value>Odder Trap</value>
+    <value>獺獺陷阱</value>
   </data>
   <data name="Traps_Owlet_Trap" xml:space="preserve">
-    <value>Owlet Trap</value>
+    <value>貓頭小鷹陷阱</value>
   </data>
   <data name="Chest_Accursed_Hoard" xml:space="preserve">
-    <value>Accursed Hoard</value>
+    <value>埋藏的寶藏</value>
   </data>
   <data name="Chest_Bronze_Chest" xml:space="preserve">
-    <value>Bronze Chest</value>
+    <value>銅寶箱</value>
   </data>
   <data name="Chest_Silver_Chest" xml:space="preserve">
-    <value>Silver Chest</value>
+    <value>銀寶箱</value>
   </data>
   <data name="Chest_Gold_Chest" xml:space="preserve">
-    <value>Gold Chest</value>
+    <value>金寶箱</value>
   </data>
   <data name="Chest_Mimic" xml:space="preserve">
-    <value>Mimic</value>
+    <value>擬態怪</value>
   </data>
   <data name="Traps_Unknown" xml:space="preserve">
-    <value>Trap</value>
+    <value>陷阱</value>
   </data>
   <data name="PluginCommands_OpenChest_Help" xml:space="preserve">
-    <value>Try top open a Chest near to you.</value>
+    <value>嘗試開啟你附近的寶箱。</value>
   </data>
   <data name="MainWindow_OpenChestButton_Help" xml:space="preserve">
-    <value>Try to open the nearest chest to you.</value>
+    <value>嘗試開啟離你最近的寶箱。</value>
   </data>
   <data name="ConfigWindow_Tab_Extras" xml:space="preserve">
-    <value>Extras</value>
+    <value>其他</value>
   </data>
   <data name="ConfigWindow_ExtrasTab_ShowDebugInformation" xml:space="preserve">
-    <value>Show Debug Information</value>
+    <value>顯示除錯資訊</value>
   </data>
   <data name="ConfigWindow_ExtrasTab_ShowDebugInformation_Details" xml:space="preserve">
-    <value>Show the ID for elements. 
-Please turn this on before you submit a bug report. 
-It helps me to identify problems faster.</value>
+    <value>顯示元素的 ID。
+回報錯誤前請先開啟此選項。
+這有助於更快找出問題所在。</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects_Votife" xml:space="preserve">
-    <value>Vestige</value>
+    <value>遺跡</value>
   </data>
   <data name="Traps_Fae_Trap" xml:space="preserve">
-    <value>Fae Trap</value>
+    <value>妖精陷阱</value>
   </data>
   <data name="ConfigWindow_Language" xml:space="preserve">
-      <value>Language:</value>
+      <value>語言：</value>
   </data>
   <data name="ConfigWindow_Language_en" xml:space="preserve">
-      <value>English</value>
+      <value>英文</value>
   </data>
   <data name="ConfigWindow_Language_de" xml:space="preserve">
-      <value>German</value>
+      <value>德文</value>
   </data>
   <data name="ConfigWindow_Language_fr" xml:space="preserve">
-      <value>French</value>
+      <value>法文</value>
   </data>
   <data name="ConfigWindow_Language_ja" xml:space="preserve">
-      <value>Japanese</value>
+      <value>日文</value>
   </data>
   <data name="ConfigWindow_Language_ko" xml:space="preserve">
-      <value>Korean</value>
+      <value>韓文</value>
   </data>
   <data name="ConfigWindow_Language_zh" xml:space="preserve">
-      <value>Chinese</value>
+      <value>繁體中文</value>
   </data>
   <data name="ConfigWindow_Language_default" xml:space="preserve">
-      <value>Client-Language</value>
+      <value>客戶端語言</value>
   </data>
 </root>

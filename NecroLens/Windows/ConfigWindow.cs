@@ -27,7 +27,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
               new KeyValuePair<string, string>("en", Strings.ConfigWindow_Language_en),
               new KeyValuePair<string, string>("fr", Strings.ConfigWindow_Language_fr),
               new KeyValuePair<string, string>("ja", Strings.ConfigWindow_Language_ja),
-              new KeyValuePair<string, string>("zh", Strings.ConfigWindow_Language_zh),
+              new KeyValuePair<string, string>("zh-Hant", Strings.ConfigWindow_Language_zh),
               new KeyValuePair<string, string>("ko", Strings.ConfigWindow_Language_ko),
           }
       };  
@@ -58,6 +58,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
                             ClientLanguage.French => CultureInfo.GetCultureInfo("fr"),
                             ClientLanguage.German => CultureInfo.GetCultureInfo("de"),
                             ClientLanguage.Japanese => CultureInfo.GetCultureInfo("ja"),
+                            ClientLanguage.ChineseSimplified => CultureInfo.GetCultureInfo("zh-Hant"),
                             _ => CultureInfo.GetCultureInfo("en")
                         };
                     }
@@ -73,7 +74,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         ImGui.Spacing();
         ImGui.SameLine();
         
-        if (ImGui.Button("Want to help with localization?"))
+        if (ImGui.Button(Strings.ConfigWindow_LocalizationHelp))
             Process.Start(new ProcessStartInfo
                               { FileName = "https://crowdin.com/project/necrolens", UseShellExecute = true });
         if (ImGui.BeginTabBar("MyTabBar", ImGuiTabBarFlags.None))
