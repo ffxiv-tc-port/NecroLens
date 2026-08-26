@@ -32,7 +32,7 @@ public class PluginCommands : IDisposable
         CommandManager.AddHandler("/pomander",
             new CommandInfo((_, args) => DungeonService.OnPomanderCommand(args))
             {
-                HelpMessage = "Try to use the pomander with given name",
+                HelpMessage = Strings.PluginCommands_Pomander_Help,
                 ShowInHelp = true
             });
     }

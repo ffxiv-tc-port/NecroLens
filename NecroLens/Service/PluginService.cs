@@ -39,10 +39,10 @@ public class PluginService
     public static IGameGui GameGui { get; private set; } = null!;
 
     [PluginService]
-    public static IGameNetwork GameNetwork { get; private set; } = null!;
+    public static IObjectTable ObjectTable { get; private set; } = null!;
 
     [PluginService]
-    public static IObjectTable ObjectTable { get; private set; } = null!;
+    public static IPlayerState PlayerState { get; private set; } = null!;
 
     [PluginService]
     public static IPartyList PartyList { get; private set; } = null!;

@@ -2,38 +2,29 @@ name: Build Check
 
 on:
   push:
+    branches:
+      - 'tc-7.20'
     tags-ignore:
       - 'v*'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  gate:
-    runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.check.outputs.proceed }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check if VersionPrefix changed from baseline
-        id: check
-        shell: bash
-        run: |
-          PREFIX=$(grep -oP '(?<=<VersionPrefix>)[^<]+' NecroLens/NecroLens.csproj)
-          echo "Current VersionPrefix: $PREFIX (baseline: 7.15.0)"
-          if [ "$PREFIX" = "7.15.0" ]; then
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
-    needs: gate
-    if: needs.gate.outputs.proceed == 'true'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      # 🔴 resx 的「鍵存在但值為空」是崩潰級缺陷,不是風格問題:
+      #    ResourceManager 回 "" 而**不會** fallback → ImGui 拿到零長度 span →
+      #    fixed 取指標為 null → igFindRenderedTextEnd 從位址 0 掃 → C0000005。
+      #    「鍵不存在」反而安全(會正常退回中性資源)。
+      #    上游 crowdin 的 "New translations *.resx" 合併會把這種地雷帶回來,
+      #    所以擋在建置之前。腳本純標準函式庫、自帶校準閘門(G1~G7)。
+      - name: Check resx empty values
+        shell: pwsh
+        run: python .github/scripts/check_resx_empty.py
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
@@ -41,7 +32,7 @@ jobs:
       - name: Download Dalamud (pinned TC-compatible build)
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri https://github.com/ffxiv-tc-port/DalamudPluginsTC/releases/download/dalamud-pin-v12.0.2/dalamud-api12-net9.zip -OutFile dalamud-pinned.zip
+          Invoke-WebRequest -Uri https://github.com/ffxiv-tc-port/DalamudPluginsTC/releases/download/dalamud-pin-v13.0.0.16/dalamud-api13-net9.zip -OutFile dalamud-pinned.zip
           Expand-Archive -Force dalamud-pinned.zip "$env:AppData\FFXIVSimpleLauncher\Dalamud\Injector\"
           Expand-Archive -Force dalamud-pinned.zip "$env:AppData\xivlauncher\Addon\Hooks\dev\"
       - name: Build with dotnet

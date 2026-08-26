@@ -5,6 +5,7 @@
     "Description": "深層迷宮輔助工具。提供怪物雷達、仇恨、視野範圍等各種資訊。",
     "InternalName": "NecroLens",
     "ApplicableVersion": "any",
+    "DalamudApiLevel": 13,
     "Tags": [
         "potd",
         "hoh",

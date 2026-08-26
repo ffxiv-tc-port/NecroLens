@@ -785,7 +785,16 @@ namespace NecroLens.Data {
                 return ResourceManager.GetString("PluginCommands_OpenChest_Help", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Try to use the pomander with given name.
+        /// </summary>
+        internal static string PluginCommands_Pomander_Help {
+            get {
+                return ResourceManager.GetString("PluginCommands_Pomander_Help", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Opens the configuration..
         /// </summary>
@@ -882,6 +891,123 @@ namespace NecroLens.Data {
         internal static string Traps_Unknown {
             get {
                 return ResourceManager.GetString("Traps_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Traps.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_Traps {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_Traps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Mimic coffers.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_MimicCoffer {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_MimicCoffer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Passage label.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_PassageName {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_PassageName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Return point.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_Return {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_Return", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Give a pomander name like &apos;/pomander Safety&apos;, or just part of one like &apos;/pomander saf&apos;.
+        /// </summary>
+        internal static string Pomander_NeedName {
+            get {
+                return ResourceManager.GetString("Pomander_NeedName", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple matches found for &apos;{0}&apos; - please be more specific..
+        /// </summary>
+        internal static string Pomander_MultipleMatches {
+            get {
+                return ResourceManager.GetString("Pomander_MultipleMatches", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No pomander found matching &apos;{0}&apos;..
+        /// </summary>
+        internal static string Pomander_NoMatches {
+            get {
+                return ResourceManager.GetString("Pomander_NoMatches", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pomanders can only be used inside a Deep Dungeon..
+        /// </summary>
+        internal static string Pomander_NotInDeepDungeon {
+            get {
+                return ResourceManager.GetString("Pomander_NotInDeepDungeon", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to use: item penalty is active..
+        /// </summary>
+        internal static string Pomander_ItemPenalty {
+            get {
+                return ResourceManager.GetString("Pomander_ItemPenalty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} cannot be used in this Deep Dungeon..
+        /// </summary>
+        internal static string Pomander_NotInThisDungeon {
+            get {
+                return ResourceManager.GetString("Pomander_NotInThisDungeon", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You are not holding any {0}..
+        /// </summary>
+        internal static string Pomander_NoneHeld {
+            get {
+                return ResourceManager.GetString("Pomander_NoneHeld", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} cannot be used right now..
+        /// </summary>
+        internal static string Pomander_NotUsableNow {
+            get {
+                return ResourceManager.GetString("Pomander_NotUsableNow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Using {0}.
+        /// </summary>
+        internal static string Pomander_Using {
+            get {
+                return ResourceManager.GetString("Pomander_Using", resourceCulture);
             }
         }
     }

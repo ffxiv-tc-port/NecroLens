@@ -46,7 +46,7 @@ public class ESPService : IDisposable
     /**
      * Clears the drawable GameObjects on MapChange.
      */
-    private void OnCleanup(uint e)
+    private void OnCleanup(ushort e)
     {
         Monitor.Enter(mapObjects);
         mapObjects.Clear();
@@ -124,12 +124,19 @@ public class ESPService : IDisposable
 
             if (espObject.IsChest())
             {
-                if (!conf.ShowBronzeCoffers && type == ESPObject.ESPType.BronzeChest) return;
-                if (!conf.ShowSilverCoffers && type == ESPObject.ESPType.SilverChest) return;
-                if (!conf.ShowGoldCoffers && type == ESPObject.ESPType.GoldChest) return;
-                if (!conf.ShowHoards && type == ESPObject.ESPType.AccursedHoardCoffer) return;
+                var highlightThisCoffer = type switch
+                {
+                    ESPObject.ESPType.BronzeChest => conf.ShowBronzeCoffers,
+                    ESPObject.ESPType.SilverChest => conf.ShowSilverCoffers,
+                    ESPObject.ESPType.GoldChest => conf.ShowGoldCoffers,
+                    ESPObject.ESPType.AccursedHoardCoffer => conf.ShowHoards,
+                    _ => true
+                };
 
-                if (distance <= 35 && conf.HighlightCoffers)
+                // 「寶箱高亮」與「可互動範圍圈」分開判斷。
+                // 這樣才能把寶箱高亮讓給 PalacePal(它有歷史記錄資料庫)、
+                // 同時保留 NecroLens 獨有的可互動距離提示,兩邊不會重複畫同一個圈。
+                if (highlightThisCoffer && distance <= 35 && conf.HighlightCoffers)
                     DrawCircleFilled(drawList, espObject, 1f, espObject.RenderColor(), 1f);
                 if (distance <= 10 && conf.ShowCofferInteractionRange)
                     DrawInteractionCircle(drawList, espObject, espObject.InteractionDistance());
@@ -150,7 +157,7 @@ public class ESPService : IDisposable
 
         if (Config.ShowMobViews &&
             (type == ESPObject.ESPType.Enemy || type == ESPObject.ESPType.Mimic) &&
-            BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
+            BattleNpcSubKind.Enemy.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
             !espObject.InCombat())
         {
             if (conf.ShowPatrolArrow && espObject.IsPatrol())
@@ -192,8 +199,8 @@ public class ESPService : IDisposable
                !(Condition[ConditionFlag.LoggingOut] ||
                  Condition[ConditionFlag.BetweenAreas] ||
                  Condition[ConditionFlag.BetweenAreas51]) &&
-                 ClientState.LocalPlayer != null &&
-                 ClientState.LocalContentId > 0
+                 ObjectTable.LocalPlayer != null &&
+                 PlayerState.ContentId > 0
                 && DeepDungeonUtil.InDeepDungeon;
     }
 
@@ -218,7 +225,7 @@ public class ESPService : IDisposable
 
                         var espObj = new ESPObject(obj, mobInfo);
                         
-                        if (obj.DataId == DataIds.GoldChest
+                        if (obj.BaseId == DataIds.GoldChest
                             && DungeonService.FloorDetails.DoubleChests.TryGetValue(obj.EntityId, out var value))
                         {
                             espObj.ContainingPomander = value;
@@ -230,14 +237,28 @@ public class ESPService : IDisposable
                         DungeonService.TrackFloorObjects(espObj);
                     }
 
-                    if (ClientState.LocalPlayer != null &&
-                        ClientState.LocalPlayer.EntityId == obj.EntityId)
+                    if (ObjectTable.LocalPlayer != null &&
+                        ObjectTable.LocalPlayer.EntityId == obj.EntityId)
                         entityList.Add(new ESPObject(obj));
                 }
 
                 Monitor.Enter(mapObjects);
                 mapObjects.Clear();
                 mapObjects.AddRange(entityList);
+                Monitor.Exit(mapObjects);
+            }
+            else
+            {
+                // ShouldDraw() 為 false 時也要清空。
+                // mapObjects 內的 ESPObject 持有 IGameObject,而 Dalamud 的
+                // GameObject.Address 建構時就凍結、永不重新解析,所以那是一份
+                // 只在「當幀」有效的原生指標快照。
+                // 原本這裡不清空,等於讓陳舊快照留著,只靠「繪製端 OnUpdate 的
+                // ShouldDraw() 與這裡同幀一致」來保證不會被畫出來——那個前提
+                // 無法離線證明,而它不成立的後果是解參考已釋放的位址(攔不到的
+                // AccessViolation)。直接清空就不必依賴那個前提。
+                Monitor.Enter(mapObjects);
+                mapObjects.Clear();
                 Monitor.Exit(mapObjects);
             }
         }

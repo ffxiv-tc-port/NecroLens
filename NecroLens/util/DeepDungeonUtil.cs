@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
+using NecroLens.Data;
 using NecroLens.Model;
 
 namespace NecroLens.util;
@@ -27,7 +29,7 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Can only be used in DeepDungeon");
+            PrintChatMessage(Strings.Pomander_NotInDeepDungeon);
             return false;
         }
 
@@ -40,7 +42,7 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Unable to use: Item Penalty active");
+            PrintChatMessage(Strings.Pomander_ItemPenalty);
             return false;
         }
 
@@ -65,7 +67,8 @@ public static class DeepDungeonUtil
 
         if (!usable)
         {
-            PrintChatMessage($"Unable to use: Pomander not usable in current Deep Dungeon");
+            var name = DungeonService.PomanderNames.GetValueOrDefault(pomander, pomander.ToString());
+            PrintChatMessage(string.Format(Strings.Pomander_NotInThisDungeon, name));
             return false;
         }
 
@@ -77,25 +80,28 @@ public static class DeepDungeonUtil
         pomander = default;
         if (name.IsNullOrEmpty())
         {
-            PrintChatMessage($"Define a pomander name like '/pomander Safety' or even a part of the name like '/pomander saf'");
+            PrintChatMessage(Strings.Pomander_NeedName);
             return false;
         }
 
         var sheet = DataManager.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonItem>()!;
+        // TC 的 DeepDungeonItem 把名稱放在 Name，Singular 欄位 39 列全是空字串
+        // （已對實機 sqpack 查證）。原本比對 Singular，在台服永遠找不到任何魔陶器，
+        // 等於 /pomander <名稱> 整個指令失效。改用 Name，其他語系的 Name 也有值。
         var matches = sheet.Where(e => e.RowId is > 0 and < 23 or > 36)
-                           .Where(e => e.Singular.ToString().Contains(name, StringComparison.OrdinalIgnoreCase))
+                           .Where(e => e.Name.ToString().Contains(name, StringComparison.OrdinalIgnoreCase))
                            .ToList();
 
         if (matches.Count > 1)
         {
-            PrintChatMessage($"Multiple matches found for '{name}' please be more specific.");
+            PrintChatMessage(string.Format(Strings.Pomander_MultipleMatches, name));
         }
         else if (!matches.Any())
         {
             // Nothing found? Try match with enum
             if (!Enum.TryParse(name, true, out pomander))
             {
-                PrintChatMessage($"No matches found for '{name}'.");
+                PrintChatMessage(string.Format(Strings.Pomander_NoMatches, name));
             }
         }
         else

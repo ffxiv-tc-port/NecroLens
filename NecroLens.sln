@@ -5,6 +5,8 @@ VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NecroLens", "NecroLens\NecroLens.csproj", "{13C812E9-0D42-4B95-8646-40EEBF30636F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECommons", "ECommons\ECommons\ECommons.csproj", "{37A10B65-AB73-4981-91E1-7D61B0E668F0}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NecroLensDataTools", "NecroLensDataTools\NecroLensDataTools.csproj", "{38352FD9-7111-4C76-B659-9655B5D09F0D}"
 EndProject
 Global
@@ -13,12 +15,16 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Debug|x64.ActiveCfg = Release|x64
-		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Debug|x64.Build.0 = Release|x64
+		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Debug|x64.ActiveCfg = Debug|x64
+		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Debug|x64.Build.0 = Debug|x64
 		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Release|x64.ActiveCfg = Release|x64
 		{13C812E9-0D42-4B95-8646-40EEBF30636F}.Release|x64.Build.0 = Release|x64
-		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Debug|x64.ActiveCfg = Release|x64
-		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Debug|x64.Build.0 = Release|x64
+		{37A10B65-AB73-4981-91E1-7D61B0E668F0}.Debug|x64.ActiveCfg = Debug|x64
+		{37A10B65-AB73-4981-91E1-7D61B0E668F0}.Debug|x64.Build.0 = Debug|x64
+		{37A10B65-AB73-4981-91E1-7D61B0E668F0}.Release|x64.ActiveCfg = Release|x64
+		{37A10B65-AB73-4981-91E1-7D61B0E668F0}.Release|x64.Build.0 = Release|x64
+		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Debug|x64.ActiveCfg = Debug|x64
+		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Debug|x64.Build.0 = Debug|x64
 		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Release|x64.ActiveCfg = Release|x64
 		{38352FD9-7111-4C76-B659-9655B5D09F0D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection

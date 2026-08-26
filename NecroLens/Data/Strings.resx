@@ -359,6 +359,9 @@ If you're stuck near a chest and cant move anymore disable this option!</value>
   <data name="PluginCommands_OpenChest_Help" xml:space="preserve">
     <value>Try top open a Chest near to you.</value>
   </data>
+  <data name="PluginCommands_Pomander_Help" xml:space="preserve">
+    <value>Try to use the pomander with given name</value>
+  </data>
   <data name="MainWindow_OpenChestButton_Help" xml:space="preserve">
     <value>Try to open the nearest chest to you.</value>
   </data>
@@ -402,5 +405,44 @@ It helps me to identify problems faster.</value>
   </data>
   <data name="ConfigWindow_Language_default" xml:space="preserve">
       <value>Client-Language</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Traps" xml:space="preserve">
+    <value>Traps</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_MimicCoffer" xml:space="preserve">
+    <value>Mimic coffers</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PassageName" xml:space="preserve">
+    <value>Passage label</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_Return" xml:space="preserve">
+    <value>Return point</value>
+  </data>
+  <data name="Pomander_NeedName" xml:space="preserve">
+    <value>Give a pomander name like '/pomander Safety', or just part of one like '/pomander saf'</value>
+  </data>
+  <data name="Pomander_MultipleMatches" xml:space="preserve">
+    <value>Multiple matches found for '{0}' - please be more specific.</value>
+  </data>
+  <data name="Pomander_NoMatches" xml:space="preserve">
+    <value>No pomander found matching '{0}'.</value>
+  </data>
+  <data name="Pomander_NotInDeepDungeon" xml:space="preserve">
+    <value>Pomanders can only be used inside a Deep Dungeon.</value>
+  </data>
+  <data name="Pomander_ItemPenalty" xml:space="preserve">
+    <value>Unable to use: item penalty is active.</value>
+  </data>
+  <data name="Pomander_NotInThisDungeon" xml:space="preserve">
+    <value>{0} cannot be used in this Deep Dungeon.</value>
+  </data>
+  <data name="Pomander_NoneHeld" xml:space="preserve">
+    <value>You are not holding any {0}.</value>
+  </data>
+  <data name="Pomander_NotUsableNow" xml:space="preserve">
+    <value>{0} cannot be used right now.</value>
+  </data>
+  <data name="Pomander_Using" xml:space="preserve">
+    <value>Using {0}</value>
   </data>
 </root>

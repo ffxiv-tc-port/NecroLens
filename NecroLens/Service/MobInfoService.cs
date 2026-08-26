@@ -54,7 +54,14 @@ public class MobInfoService : IDisposable
         _loadingFallback = true;
 
         PluginLog.Info("Mob infos empty. Retry backup method.");
-        const string uri = "https://raw.githubusercontent.com/Jukkales/NecroLens/main/NecroLens/Data/allMobs.json";
+        // 指向本 org 的 fork，不是上游 Jukkales/NecroLens：這份備援資料要跟隨我們自己的
+        // 修補（例如死者宮殿／正統優雷卡補齊的擬態怪與友方 id），抓上游會拿回沒有那些
+        // 修補的版本，而且是靜默的——備援路徑本來就只在主檔載入失敗時才走。
+        //
+        // 🔴 ref 用 HEAD 而不是寫死分支名。Splatoon 腳本鏈上同樣的教訓：寫死的分支名在
+        //    改名或換預設分支的那天會 404，而這裡的 404 只會變成一行 log，使用者看到的是
+        //    「疊加層什麼都不顯示」。HEAD 由 GitHub 解析成該 repo 當下的預設分支。
+        const string uri = "https://raw.githubusercontent.com/ffxiv-tc-port/NecroLens/HEAD/NecroLens/Data/allMobs.json";
 
         Task.Run(async () =>
         {
