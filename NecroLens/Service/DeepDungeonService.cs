@@ -364,7 +364,7 @@ public unsafe class DeepDungeonService : IDisposable
 
             if (hoardTails.Any(tail => text.EndsWith(tail, StringComparison.Ordinal)))
             {
-                // 只在狀態真的翻轉時寫 Information:使用者跑 LogLevel 2,Debug 收不到,
+                // 只在狀態真的翻轉時寫 Information:使用者跑 LogLevel 1,Debug 收得到但單檔數十萬行會淹沒,
                 // 而這行是「chat type 遮罩修好了」在實機唯一看得見的證據。
                 if (!FloorDetails.HoardFound)
                     PluginLog.Information("NecroLens:系統訊息回報埋藏的寶藏已被發現/取得。");
