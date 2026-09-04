@@ -1,63 +1,24 @@
-[![Build](https://github.com/Jukkales/NecroLens/actions/workflows/build-plugin.yml/badge.svg)](https://github.com/Jukkales/NecroLens/actions/workflows/build-plugin.yml)
-[![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpuni.sh%2Fapi%2Frepository%2Fjukka&query=%24%5B0%5D.DownloadCount&label=Downloads&color=4DC71F
-)]()
-[![Last Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpuni.sh%2Fapi%2Frepository%2Fjukka&query=%24%5B0%5D.AssemblyVersion&label=release
-)]()
-[![Last Commit](https://img.shields.io/github/last-commit/Jukkales/NecroLens)]()
-
-[![image](https://discordapp.com/api/guilds/1001823907193552978/embed.png?style=banner2)](https://discord.gg/Zzrcc8kmvy)
-
-### Want to help with localization?
-https://crowdin.com/project/necrolens
-
 # NecroLens
-```
-https://puni.sh/api/repository/jukka
-```
 
-<img src="https://raw.githubusercontent.com/Jukkales/NecroLens/main/icon.png" width="100" height="100" align="left">
+在**死者宮殿**、**天之御柱**、**正統優雷卡**這類深層迷宮中提供 ESP 透視顯示的插件：能看穿牆壁、看到怪物的感知範圍與朝向。
 
-This Plugin allows you to explore a DeepDungeon with a tool like the HoloLens or GoogleGlass on.
-You will be able to see trough walls, see where monster are looking ore be aware of you and many more.
+進入上述副本時會自動開啟主視窗並開始繪製 ESP；意外關閉可用 `/necrolens` 重新開啟，`/necrolenscfg` 開啟設定視窗。
 
-This is an ESP hack (extrasensory perception), so don't use it if you not feel well.
+## 主要功能
 
-## Installation
-For installation instructions, please see my [custom plugin repo](https://github.com/Jukkales/DalamudPlugins).
+- **怪物 ESP**：依仇恨感知類型繪製不同標示——接近感知怪物顯示大圓圈（進入即觸發）、視覺感知怪物顯示 90° 扇形視野、聽覺感知怪物範圍類似接近感知但距離較近；巡邏怪物會顯示移動方向箭頭。
+- **迷宮物件偵測**：標示寶箱（銅／銀／金）、埋藏的寶藏、通道、歸還點、陷阱、寶箱怪、遺跡等物件；無法偵測伺服器端才知道的隱形陷阱、寶箱炸彈與寶藏（除非使用了對應的萬應藥）。
+- **靠近自動高亮**：物件在角色靠近時會額外標示。
+- **重生與樓層計時器**。
+- **萬應藥（Pomander）效果追蹤**：顯示本層已啟用的靜態萬應藥效果，`/pomander` 指令操作。
+- **自動開箱**：靠近且判定安全時自動開啟寶箱（最多開一次，極少數情況可能卡住）。`/openchest` 指令可手動觸發最近的寶箱。
+- **選擇性資料回報**：可自願上傳樓層怪物資料協助校正仇恨距離等數值，預設關閉。
 
-![image](screen.png)
+## 已知限制
 
-## Features
- - ESP draws for ever monster
-   - Proximity mobs will have a large circle around them. Tey aggro you once you step in
-   - Sight mobs wil have a 90° view in front and agro you once they see you in this area
-   - Sound mobs are like proximity mobs, but they only aggro you if you run ner to them or touch them
-   - Patrols always have a movement direction arrow
- - Detection of dungeon objects like chests, exit, return and so on
-   - The plugin can NOT detect whats not there. 
-   - Invisible Traps, Chest bombs and Hoards are ServerSide only! (expect you use a Pomander)
- - Highlight of objects once near
- - Respawn and Floor timer
- - Pomander tracker of static floor effects
- - Automatically opens chest for you once near
-   - Only when safe, max one time and it very rarely stuck you 
- - `/pomander` command
+- 這是感知外掛（ESP），會讓你看到原本看不到的資訊，介意的話請勿使用。
+- 隱形陷阱、寶箱炸彈與寶藏屬於伺服器端資料，插件本身偵測不到。
 
-## Usage
-The Plugin is only active in **Palace of the Dead**, **Heaven on High** or **Eureka Orthos**. Once you enter this duties a Window opens up showing floor information and the ESP is drawing.
+翻譯協作：[Crowdin](https://crowdin.com/project/necrolens)
 
-If you accidentally closed the main window you can bring it back with the `/necrolens` chat command.
-
-## Planned Features
- - Mob Movement tracker
-   - Shows you an indicator if its safe to move or if the mob will soon move
- - Accurate aggro ranges
-   - Currently the aggro range is fixed but some mobs have slightly bigger or smaller ranges
-   - Tracking these and safe these values to be more precise
- - Better remaining kills detection
- - Pomander auto usage
- - Enemy AoE Radar
- - Trap/Hoard location logging
-
----
-_Special thanks to Leonhart for making the icon!_
+原作者：[Jukkales](https://github.com/Jukkales/NecroLens)（感謝 Leonhart 繪製圖示）
