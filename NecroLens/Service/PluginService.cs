@@ -21,9 +21,6 @@ public class PluginService
     public static IClientState ClientState { get; private set; } = null!;
 
     [PluginService]
-    public static IPlayerState PlayerState { get; private set; } = null!;
-
-    [PluginService]
     public static ICommandManager CommandManager { get; private set; } = null!;
 
     [PluginService]
@@ -45,6 +42,9 @@ public class PluginService
     public static IObjectTable ObjectTable { get; private set; } = null!;
 
     [PluginService]
+    public static IPlayerState PlayerState { get; private set; } = null!;
+
+    [PluginService]
     public static IPartyList PartyList { get; private set; } = null!;
     
     [PluginService]
@@ -62,4 +62,5 @@ public class PluginService
     public static MobInfoService MobService { get; set; } = null!;
     public static Configuration Config { get; set; } = null!;
     public static DeepDungeonService DungeonService { get; set; } = null!;
+    public static MobVulnerabilityService VulnerabilityService { get; set; } = null!;
 }

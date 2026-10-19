@@ -1,0 +1,60 @@
+name: Build Check
+
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64]
+    steps:
+      - name: 取 App token（runner 本機私鑰，private 子模組 checkout 用）
+        id: app
+        shell: pwsh
+        run: |
+          $keyPath = 'D:\ffxiv-tc-port\tctoolbox-app.pem'
+          if (-not (Test-Path -LiteralPath $keyPath)) { throw "App private key not found on this runner: $keyPath" }
+          function B64Url([byte[]]$b) { [Convert]::ToBase64String($b).TrimEnd('=').Replace('+', '-').Replace('/', '_') }
+          $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+          $hdr = B64Url ([Text.Encoding]::UTF8.GetBytes('{"alg":"RS256","typ":"JWT"}'))
+          $pl = B64Url ([Text.Encoding]::UTF8.GetBytes('{"iat":' + ($now - 60) + ',"exp":' + ($now + 540) + ',"iss":"4448133"}'))
+          $rsa = [System.Security.Cryptography.RSA]::Create()
+          $rsa.ImportFromPem((Get-Content -LiteralPath $keyPath -Raw))
+          $sig = $rsa.SignData([Text.Encoding]::UTF8.GetBytes("$hdr.$pl"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)
+          $h = @{ Authorization = "Bearer $hdr.$pl.$(B64Url $sig)"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
+          $inst = @(Invoke-RestMethod -Headers $h -Uri 'https://api.github.com/app/installations') | Where-Object { $_.account.login -eq 'ffxiv-tc-port' }
+          if (-not $inst) { throw 'App 4448133 has no installation on org ffxiv-tc-port' }
+          $tok = (Invoke-RestMethod -Method Post -Headers $h -Uri "https://api.github.com/app/installations/$($inst[0].id)/access_tokens").token
+          if (-not $tok) { throw 'installation access token is empty' }
+          Write-Host "::add-mask::$tok"
+          "token=$tok" >> $env:GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.app.outputs.token }}
+      # 🔴 resx 的「鍵存在但值為空」是崩潰級缺陷,不是風格問題:
+      #    ResourceManager 回 "" 而**不會** fallback → ImGui 拿到零長度 span →
+      #    fixed 取指標為 null → igFindRenderedTextEnd 從位址 0 掃 → C0000005。
+      #    「鍵不存在」反而安全(會正常退回中性資源)。
+      #    上游 crowdin 的 "New translations *.resx" 合併會把這種地雷帶回來,
+      #    所以擋在建置之前。腳本純標準函式庫、自帶校準閘門(G1~G7)。
+      - name: Check resx empty values
+        shell: pwsh
+        run: '& "C:/Program Files/Python313/python.exe" .github/scripts/check_resx_empty.py'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            9.x
+            10.x
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.tool_cache }}/dotnet
+      - name: Download Dalamud (pinned TC-compatible build)
+        shell: pwsh
+        run: |
+          $pin = 'D:\ffxiv-tc-port\dalamud-pins\dalamud-pin-v13.0.0.17\dalamud-api13-net9.zip'
+          if (-not (Test-Path -LiteralPath $pin)) { throw "pinned Dalamud not found on this runner: $pin" }
+          Copy-Item -LiteralPath $pin -Destination dalamud-pinned.zip
+          Expand-Archive -Force dalamud-pinned.zip "$env:RUNNER_TEMP\dalamud-pinned\"
+      - name: Build with dotnet
+        run: dotnet build NecroLens/NecroLens.csproj --configuration Release -p:DalamudLibPath="$env:RUNNER_TEMP\dalamud-pinned\"

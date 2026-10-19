@@ -23,6 +23,7 @@ public sealed class NecroLens : IDalamudPlugin
     private readonly ESPService espService;
     private readonly MainWindow mainWindow;
     private readonly MobInfoService mobInfoService;
+    private readonly MobVulnerabilityService mobVulnerabilityService;
     private readonly PluginCommands pluginCommands;
 
     public readonly WindowSystem WindowSystem = new("NecroLens");
@@ -40,6 +41,10 @@ public sealed class NecroLens : IDalamudPlugin
 
         Config = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
+        // 指令的 HelpMessage 在 PluginCommands 建構當下就從 resx 取值並固定下來,
+        // 語系必須在那之前套用,否則 /xlhelp 與插件安裝器的指令清單會落回英文。
+        ApplyUiCulture();
+
         pluginCommands = new PluginCommands();
         configWindow = new ConfigWindow();
         mainWindow = new MainWindow();
@@ -50,6 +55,9 @@ public sealed class NecroLens : IDalamudPlugin
         mobInfoService = new MobInfoService();
         MobService = mobInfoService;
 
+        mobVulnerabilityService = new MobVulnerabilityService();
+        VulnerabilityService = mobVulnerabilityService;
+
         espService = new ESPService();
 
         deepDungeonService = new DeepDungeonService();
@@ -59,7 +67,10 @@ public sealed class NecroLens : IDalamudPlugin
 #endif
         PluginInterface.UiBuilder.Draw += DrawUI;
         PluginInterface.UiBuilder.OpenConfigUi += ShowConfigWindow;
+    }
 
+    private static void ApplyUiCulture()
+    {
         if (Config.Language == "")
         {
             CultureInfo.DefaultThreadCurrentUICulture = ClientState.ClientLanguage switch
@@ -67,6 +78,9 @@ public sealed class NecroLens : IDalamudPlugin
                 ClientLanguage.French => CultureInfo.GetCultureInfo("fr"),
                 ClientLanguage.German => CultureInfo.GetCultureInfo("de"),
                 ClientLanguage.Japanese => CultureInfo.GetCultureInfo("ja"),
+                // 台服客戶端回報 ClientLanguage 7(TraditionalChinese),舊版 Dalamud 回報 4(ChineseSimplified);
+                // 用數值比較,列舉裡有沒有 7 這個名字都編得過。
+                (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => CultureInfo.GetCultureInfo("zh-Hant"),
                 _ => CultureInfo.GetCultureInfo("en")
             };
         }
@@ -92,6 +106,7 @@ public sealed class NecroLens : IDalamudPlugin
         espTestService.Dispose();
 #endif
         mobInfoService.Dispose();
+        mobVulnerabilityService.Dispose();
         
         ECommonsMain.Dispose();
     }

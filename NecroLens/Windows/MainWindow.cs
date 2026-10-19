@@ -47,6 +47,36 @@ public class MainWindow : Window, IDisposable
         return TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss");
     }
 
+    // 樓層與重生倒數的字串只在數值或格式字串（換語言）變了才重組；結果與每幀 string.Format 相同。
+    private string? floorFormat, floorText, respawnFormat, respawnText;
+    private int floorValue, respawnSeconds;
+
+    private string FloorText(int floor)
+    {
+        var format = Strings.MainWindow_Floor;
+        if (floorText == null || floor != floorValue || format != floorFormat)
+        {
+            floorText = string.Format(format, floor);
+            floorValue = floor;
+            floorFormat = format;
+        }
+
+        return floorText;
+    }
+
+    private string RespawnText(int seconds)
+    {
+        var format = Strings.MainWindow_Respawns;
+        if (respawnText == null || seconds != respawnSeconds || format != respawnFormat)
+        {
+            respawnText = string.Format(format, FormatTime(seconds));
+            respawnSeconds = seconds;
+            respawnFormat = format;
+        }
+
+        return respawnText;
+    }
+
     public override bool DrawConditions()
     {
         return DeepDungeonUtil.InDeepDungeon && DungeonService.Ready;
@@ -93,13 +123,14 @@ public class MainWindow : Window, IDisposable
         }
     }
 
+    // 內插直接寫進 ImU8String 的緩衝，不另配字串；格式與 ToString("000:")／FormatTime 相同。
     private static void DrawTimeSetLine(int floor, int time)
     {
-        ImGui.Text(floor.ToString("000:"));
+        ImGui.Text($"{floor:000:}");
         ImGui.SameLine();
-        var text = FormatTime(time);
         var color = time <= 0 ? Color.DimGray.ToV4() : Color.White.ToV4();
-        ImGui.TextColored(DungeonService.FloorDetails.CurrentFloor == floor ? Color.Yellow.ToV4() : color, text);
+        ImGui.TextColored(DungeonService.FloorDetails.CurrentFloor == floor ? Color.Yellow.ToV4() : color,
+                          $@"{TimeSpan.FromSeconds(time):mm\:ss}");
     }
 
     private void DrawTimeSet()
@@ -107,18 +138,27 @@ public class MainWindow : Window, IDisposable
         ImGui.BeginGroup();
         ImGui.Text(Strings.MainWindow_TimeSet_Title);
 
-        var first = DungeonService.FloorTimes.Take(5);
+        // 前 5 筆一欄、第 6～10 筆一欄（與 Take(5)／Skip(5).Take(5) 同序）。
         ImGui.BeginGroup();
-        foreach (var floor in first)
+        var index = 0;
+        foreach (var floor in DungeonService.FloorTimes)
+        {
+            if (index >= 5) break;
             DrawTimeSetLine(floor.Key, floor.Value);
+            index++;
+        }
 
         ImGui.EndGroup();
         ImGui.SameLine(100);
 
-        var second = DungeonService.FloorTimes.Skip(5).Take(5);
         ImGui.BeginGroup();
-        foreach (var floor in second)
-            DrawTimeSetLine(floor.Key, floor.Value);
+        index = 0;
+        foreach (var floor in DungeonService.FloorTimes)
+        {
+            if (index >= 10) break;
+            if (index >= 5) DrawTimeSetLine(floor.Key, floor.Value);
+            index++;
+        }
 
         ImGui.EndGroup();
 
@@ -141,32 +181,33 @@ public class MainWindow : Window, IDisposable
 
     private void DrawCurrentFloorEffects()
     {
-        var effects = DungeonService.FloorDetails.GetFloorEffects();
+        var effects = DungeonService.FloorDetails;
         var colorWhite = Color.White.ToV4();
         var colorGrey = Color.DimGray.ToV4();
         ImGui.BeginGroup();
         ImGui.Text(Strings.MainWindow_CurrentFloorEffects_Title);
         ImGui.Indent(15);
-        ImGui.TextColored(effects.Contains(Pomander.Affluence) ? colorWhite : colorGrey,
+        // 魔科學器變體已在 FloorDetails.OnPomanderUsed 換回基本值，這裡只認基本值。
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Affluence) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Affluence);
         if (DungeonService.FloorDetails.IsNextFloorWith(Pomander.Affluence))
             DrawNextFloorMark();
 
-        ImGui.TextColored(effects.Contains(Pomander.Flight) ? colorWhite : colorGrey,
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Flight) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Flight);
         if (DungeonService.FloorDetails.IsNextFloorWith(Pomander.Flight))
             DrawNextFloorMark();
 
-        ImGui.TextColored(effects.Contains(Pomander.Alteration) ? colorWhite : colorGrey,
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Alteration) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Alteration);
         if (DungeonService.FloorDetails.IsNextFloorWith(Pomander.Alteration))
             DrawNextFloorMark();
 
-        ImGui.TextColored(effects.Contains(Pomander.Safety) ? colorWhite : colorGrey,
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Safety) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Safety);
-        ImGui.TextColored(effects.Contains(Pomander.Sight) ? colorWhite : colorGrey,
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Sight) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Sight);
-        ImGui.TextColored(effects.Contains(Pomander.Fortune) ? colorWhite : colorGrey,
+        ImGui.TextColored(effects.HasFloorEffect(Pomander.Fortune) ? colorWhite : colorGrey,
                           Strings.MainWindow_CurrentFloorEffects_Fortune);
         ImGui.EndGroup();
     }
@@ -174,13 +215,12 @@ public class MainWindow : Window, IDisposable
     public override void Draw()
     {
         ImGui.BeginGroup();
-        ImGui.Text(string.Format(Strings.MainWindow_Floor, DungeonService.FloorDetails.CurrentFloor));
+        ImGui.Text(FloorText(DungeonService.FloorDetails.CurrentFloor));
 
         if (DungeonService.FloorDetails.HasRespawn())
         {
             ImGui.SameLine(80);
-            ImGui.Text(string.Format(Strings.MainWindow_Respawns,
-                                     FormatTime(DungeonService.FloorDetails.TimeTillRespawn())));
+            ImGui.Text(RespawnText(DungeonService.FloorDetails.TimeTillRespawn()));
         }
 
         ImGui.Spacing();

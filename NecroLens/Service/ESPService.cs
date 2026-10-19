@@ -21,6 +21,13 @@ public class ESPService : IDisposable
 
     private readonly List<ESPObject> mapObjects;
 
+    // 兩組輪流重用的 ESPObject：一組掛在 mapObjects 給繪製端，另一組在本 tick 重新綁定。
+    // 不在 mapObjects 裡的那組一律 Unbind。ESPObject 只存純量，繪製端每幀用物件表索引重查。只在 framework 執行緒動。
+    private readonly List<ESPObject>[] espPools = [new(), new()];
+    private int buildPool;
+    private bool poolsBound;
+    private readonly List<ESPObject> entityList = new();
+
     public ESPService()
     {
         PluginLog.Debug("ESP Service loading...");
@@ -39,6 +46,8 @@ public class ESPService : IDisposable
         ClientState.TerritoryChanged -= OnCleanup;
         Framework.Update -= OnTick;
         mapObjects.Clear();
+        entityList.Clear();
+        foreach (var pool in espPools) pool.Clear();
         PluginLog.Information("ESP Service unloaded");
     }
 
@@ -46,7 +55,7 @@ public class ESPService : IDisposable
     /**
      * Clears the drawable GameObjects on MapChange.
      */
-    private void OnCleanup(uint e)
+    private void OnCleanup(ushort e)
     {
         Monitor.Enter(mapObjects);
         mapObjects.Clear();
@@ -102,8 +111,11 @@ public class ESPService : IDisposable
      */
     private void DrawEspObject(ImDrawListPtr drawList, ESPObject espObject)
     {
+        // 物件已消失或那一格換了別的物件：這一幀不畫，也不去讀它的記憶體。
+        if (!espObject.RefreshForDraw()) return;
+
         var type = espObject.Type;
-        var onScreen = GameGui.WorldToScreen(espObject.GameObject.Position, out var position2D);
+        var onScreen = GameGui.WorldToScreen(espObject.Position, out var position2D);
         if (onScreen)
         {
             var distance = espObject.Distance();
@@ -124,12 +136,19 @@ public class ESPService : IDisposable
 
             if (espObject.IsChest())
             {
-                if (!conf.ShowBronzeCoffers && type == ESPObject.ESPType.BronzeChest) return;
-                if (!conf.ShowSilverCoffers && type == ESPObject.ESPType.SilverChest) return;
-                if (!conf.ShowGoldCoffers && type == ESPObject.ESPType.GoldChest) return;
-                if (!conf.ShowHoards && type == ESPObject.ESPType.AccursedHoardCoffer) return;
+                var highlightThisCoffer = type switch
+                {
+                    ESPObject.ESPType.BronzeChest => conf.ShowBronzeCoffers,
+                    ESPObject.ESPType.SilverChest => conf.ShowSilverCoffers,
+                    ESPObject.ESPType.GoldChest => conf.ShowGoldCoffers,
+                    ESPObject.ESPType.AccursedHoardCoffer => conf.ShowHoards,
+                    _ => true
+                };
 
-                if (distance <= 35 && conf.HighlightCoffers)
+                // 「寶箱高亮」與「可互動範圍圈」分開判斷。
+                // 這樣才能把寶箱高亮讓給 PalacePal(它有歷史記錄資料庫)、
+                // 同時保留 NecroLens 獨有的可互動距離提示,兩邊不會重複畫同一個圈。
+                if (highlightThisCoffer && distance <= 35 && conf.HighlightCoffers)
                     DrawCircleFilled(drawList, espObject, 1f, espObject.RenderColor(), 1f);
                 if (distance <= 10 && conf.ShowCofferInteractionRange)
                     DrawInteractionCircle(drawList, espObject, espObject.InteractionDistance());
@@ -150,7 +169,7 @@ public class ESPService : IDisposable
 
         if (Config.ShowMobViews &&
             (type == ESPObject.ESPType.Enemy || type == ESPObject.ESPType.Mimic) &&
-            BattleNpcSubKind.Combatant.Equals((BattleNpcSubKind)espObject.GameObject.SubKind) &&
+            (BattleNpcSubKind)espObject.SubKind == BattleNpcSubKind.Enemy &&
             !espObject.InCombat())
         {
             if (conf.ShowPatrolArrow && espObject.IsPatrol())
@@ -167,7 +186,7 @@ public class ESPService : IDisposable
                     case ESPObject.ESPAggroType.Sound:
                         DrawCircle(drawList, espObject, espObject.AggroDistance(),
                                    conf.SoundAggroColor, DefaultFilledOpacity);
-                        DrawCircleFilled(drawList, espObject, espObject.GameObject.HitboxRadius,
+                        DrawCircleFilled(drawList, espObject, espObject.HitboxRadius,
                                          conf.SoundAggroColor, DefaultFilledOpacity);
                         break;
                     case ESPObject.ESPAggroType.Sight:
@@ -206,39 +225,83 @@ public class ESPService : IDisposable
         {
             if (ShouldDraw())
             {
-                var entityList = new List<ESPObject>();
-                foreach (var obj in ObjectTable)
-                {
-                    // Ignore every player object
-                    if (obj.IsValid() && !IsIgnoredObject(obj))
-                    {
-                        MobInfo mobInfo = null!;
-                        if (obj is IBattleNpc npcObj)
-                            MobService.MobInfoDictionary.TryGetValue(npcObj.NameId, out mobInfo!);
+                // 弱點查詢的預算每個 tick 重設一次；IPC 只在這條（framework）執行緒上打。
+                VulnerabilityService.BeginTick();
 
-                        var espObj = new ESPObject(obj, mobInfo);
-                        
-                        if (obj.BaseId == DataIds.GoldChest 
-                            && DungeonService.FloorDetails.DoubleChests.TryGetValue(obj.EntityId, out var value))
+                var pool = espPools[buildPool];
+                var used = 0;
+                var published = false;
+                try
+                {
+                    foreach (var obj in ObjectTable)
+                    {
+                        // Ignore every player object
+                        if (obj.IsValid() && !IsIgnoredObject(obj))
                         {
-                            espObj.ContainingPomander = value;
+                            MobInfo mobInfo = null!;
+                            if (obj is IBattleNpc npcObj)
+                                MobService.MobInfoDictionary.TryGetValue(npcObj.NameId, out mobInfo!);
+
+                            var espObj = RentEspObject(pool, ref used, obj, mobInfo);
+
+                            if (obj.BaseId == DataIds.GoldChest
+                                && DungeonService.FloorDetails.DoubleChests.TryGetValue(obj.EntityId, out var value))
+                            {
+                                espObj.ContainingPomander = value;
+                            }
+
+                            // 只在 framework 執行緒排隊查弱點（每 tick 上限 5 筆），繪製端純讀快取。
+                            if (conf.ShowMobVulnerabilities &&
+                                espObj.Type is ESPObject.ESPType.Enemy or ESPObject.ESPType.Mimic)
+                                VulnerabilityService.Prefetch(espObj.NameId);
+
+                            DungeonService.TryInteract(espObj, obj);
+
+                            entityList.Add(espObj);
+                            DungeonService.TrackFloorObjects(obj);
                         }
 
-                        DungeonService.TryInteract(espObj);
-
-                        entityList.Add(espObj);
-                        DungeonService.TrackFloorObjects(espObj);
+                        if (ObjectTable.LocalPlayer != null &&
+                            ObjectTable.LocalPlayer.EntityId == obj.EntityId)
+                            entityList.Add(RentEspObject(pool, ref used, obj, null));
                     }
 
-                    if (ObjectTable.LocalPlayer != null &&
-                        PlayerState.EntityId == obj.EntityId)
-                        entityList.Add(new ESPObject(obj));
+                    Monitor.Enter(mapObjects);
+                    mapObjects.Clear();
+                    mapObjects.AddRange(entityList);
+                    Monitor.Exit(mapObjects);
+                    published = true;
                 }
-
+                finally
+                {
+                    entityList.Clear();
+                    if (published)
+                    {
+                        // 上一 tick 那組剛被換下 mapObjects，下一 tick 輪到它重新綁定。
+                        buildPool ^= 1;
+                        UnbindPool(espPools[buildPool]);
+                        poolsBound = true;
+                    }
+                    else
+                    {
+                        // 沒換上 mapObjects：這次綁定的物件沒有人持有，mapObjects 仍是另一組。
+                        UnbindPool(pool);
+                    }
+                }
+            }
+            else
+            {
+                // ShouldDraw() 為 false 時也要清空：不在深宮時不留任何上一層的物件。
                 Monitor.Enter(mapObjects);
                 mapObjects.Clear();
-                mapObjects.AddRange(entityList);
                 Monitor.Exit(mapObjects);
+
+                if (poolsBound)
+                {
+                    UnbindPool(espPools[0]);
+                    UnbindPool(espPools[1]);
+                    poolsBound = false;
+                }
             }
         }
         catch (Exception e)
@@ -246,6 +309,29 @@ public class ESPService : IDisposable
             PluginLog.Error(e.ToString());
         }
 
+    }
+
+    private static ESPObject RentEspObject(List<ESPObject> pool, ref int used, IGameObject obj, MobInfo? mobInfo)
+    {
+        ESPObject espObj;
+        if (used < pool.Count)
+        {
+            espObj = pool[used];
+            espObj.Bind(obj, mobInfo);
+        }
+        else
+        {
+            espObj = new ESPObject(obj, mobInfo);
+            pool.Add(espObj);
+        }
+
+        used++;
+        return espObj;
+    }
+
+    private static void UnbindPool(List<ESPObject> pool)
+    {
+        foreach (var espObj in pool) espObj.Unbind();
     }
 
 }

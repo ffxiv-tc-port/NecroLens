@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -14,7 +13,7 @@ using static NecroLens.util.DeepDungeonUtil;
 
 namespace NecroLens.Model;
 
-public partial class FloorDetails
+public class FloorDetails
 {
     public readonly Dictionary<uint, Pomander> DoubleChests = new();
     private readonly List<Pomander> floorEffects = [];
@@ -30,9 +29,6 @@ public partial class FloorDetails
     public DateTime NextRespawn;
 
     public int RespawnTime;
-
-    [GeneratedRegex("\\d+")]
-    private static partial Regex FloorNumber();
 
     public void Clear()
     {
@@ -77,43 +73,64 @@ public partial class FloorDetails
         }
     }
 
-    public unsafe void VerifyFloorNumber()
-    {
-        if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon))
-        {
-            var floorText = addon->GetNodeById(26)->ChildNode->PrevSiblingNode->GetAsAtkTextNode()->NodeText.ToString();
-            var floor = int.Parse(FloorNumber().Match(floorText).Value);
-            if (CurrentFloor != floor)
-            {
-                PluginLog.Information("Floor number mismatch - adjusting");
-                CurrentFloor = floor;
-            }
-
-            FloorVerified = true;
-        }
-    }
-
+    /**
+     * 樓層數由 DeepDungeonService 直接寫入 InstanceContentDeepDungeon.Floor 的值,刻意不解析 DeepDungeonMap 視窗的文字節點
+     * (那條路徑會因為版本/語系不同而走空指標或 int.Parse 失敗)。
+     */
     public unsafe int PassageProgress()
     {
-        if (TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) && IsAddonReady(addon))
-        {
-            var key = addon->GetNodeById(16)->ChildNode->PrevSiblingNode;
-            var image = key->GetAsAtkComponentNode()->Component->UldManager.NodeList[1]->GetAsAtkImageNode();
-            return image->PartId * 10;
-        }
+        // 這條路徑每幀都會被 MainWindow 呼叫。原生指標只在這次呼叫內使用、不跨幀保存,
+        // 每一跳都做 null 與型別檢查,任何一跳失敗就回傳 0(畫面顯示為「未開啟」)。
+        // 刻意不使用 try/catch:懸空指標造成的 AccessViolationException 在 .NET Core 屬於
+        // corrupted-state exception,try/catch 完全攔不到,加了只會製造假的安全感。
+        if (!TryGetAddonByName<AtkUnitBase>("DeepDungeonMap", out var addon) || !IsAddonReady(addon))
+            return 0;
 
-        return 0;
+        // 不倚賴 IsAddonReady 的內部實作,自己再確認一次 uld 已載入完成;
+        // 未載入完成時 NodeList / NodeListCount 可能未初始化或已失效。
+        if (addon->UldManager.LoadedState != AtkLoadState.Loaded)
+            return 0;
+
+        var container = addon->GetNodeById(16);
+        if (container == null)
+            return 0;
+
+        var child = container->ChildNode;
+        if (child == null)
+            return 0;
+
+        var key = child->PrevSiblingNode;
+        // AtkResNode 的結構大小是 0xB0,而 AtkComponentNode.Component 位在 0xB0,
+        // 少了 Type 檢查(component 節點一律 >= 1000)就會讀到配置範圍外的記憶體。
+        if (key == null || (int)key->Type < 1000)
+            return 0;
+
+        var component = ((AtkComponentNode*)key)->Component;
+        if (component == null || component->UldManager.LoadedState != AtkLoadState.Loaded)
+            return 0;
+
+        // 存取 NodeList[1] 之前必須先驗上界。
+        ref var uld = ref component->UldManager;
+        if (uld.NodeList == null || uld.NodeListCount <= 1)
+            return 0;
+
+        var imageNode = uld.NodeList[1];
+        if (imageNode == null || imageNode->Type != NodeType.Image)
+            return 0;
+
+        return ((AtkImageNode*)imageNode)->PartId * 10;
     }
 
     public void OnPomanderUsed(Pomander pomander)
     {
         PluginLog.Debug($"Pomander ID: {pomander}");
 
+        // 正統優雷卡回報的是魔科學器變體（DeepDungeonItem 23～35），換回基本值，
+        // 之後 floorEffects／usedPomanders 只存基本值；20～22 是專屬魔科學器、沒有基本值。
         if (InEO)
         {
-            if (pomander is >= Pomander.Safety and <= Pomander.Serenity) pomander -= 22;
-
-            if (pomander is Pomander.Intuition or Pomander.Raising) pomander -= 20;
+            if (pomander is >= Pomander.SafetyProtomander and <= Pomander.SerenityProtomander) pomander -= 22;
+            else if (pomander is Pomander.IntuitionProtomander or Pomander.RaisingProtomander) pomander -= 20;
         }
 
         if (pomander is Pomander.Affluence or Pomander.Flight or Pomander.Alteration)
@@ -127,10 +144,12 @@ public partial class FloorDetails
 
     public DeepDungeonTrapStatus TrapStatus()
     {
-        if (floorEffects.ContainsAny(Pomander.Safety, Pomander.SafetyProtomander))
+        // 每幀呼叫：不用 ContainsAny（params 陣列每次都配置）。
+        if (floorEffects.Contains(Pomander.Safety) || floorEffects.Contains(Pomander.SafetyProtomander))
             return DeepDungeonTrapStatus.Inactive;
 
-        if (floorEffects.ContainsAny(Pomander.Sight, Pomander.SightProtomander)) return DeepDungeonTrapStatus.Visible;
+        if (floorEffects.Contains(Pomander.Sight) || floorEffects.Contains(Pomander.SightProtomander))
+            return DeepDungeonTrapStatus.Visible;
 
         return DeepDungeonTrapStatus.Active;
     }
@@ -153,15 +172,16 @@ public partial class FloorDetails
         return time;
     }
 
-    public void TrackFloorObjects(ESPObject espObj, int currentContentId)
+    /// <summary><paramref name="gameObject"/> 只在當幀有效，不可存起來。</summary>
+    public void TrackFloorObjects(IGameObject gameObject, int currentContentId)
     {
         if (FloorTransfer
-            || IsIgnored(espObj.GameObject.BaseId)
-            || FloorObjects.ContainsKey(espObj.GameObject.EntityId)) return;
+            || IsIgnored(gameObject.BaseId)
+            || FloorObjects.ContainsKey(gameObject.EntityId)) return;
 
         var obj = new FloorObject();
-        obj.DataId = espObj.GameObject.BaseId;
-        if (espObj.GameObject is IBattleNpc npcObj)
+        obj.DataId = gameObject.BaseId;
+        if (gameObject is IBattleNpc npcObj)
         {
             obj.NameId = npcObj.NameId;
             obj.Name = npcObj.Name.TextValue;
@@ -169,8 +189,8 @@ public partial class FloorDetails
 
         obj.ContentId = currentContentId;
         obj.Floor = CurrentFloor;
-        obj.HitboxRadius = espObj.GameObject.HitboxRadius;
-        FloorObjects[espObj.GameObject.EntityId] = obj;
+        obj.HitboxRadius = gameObject.HitboxRadius;
+        FloorObjects[gameObject.EntityId] = obj;
     }
 
     private bool IsIgnored(uint dataId)
@@ -241,6 +261,12 @@ public partial class FloorDetails
     public List<Pomander> GetFloorEffects()
     {
         return floorEffects.OrderBy(e => e.ToString()).ToList();
+    }
+
+    /// <summary>等同 <c>GetFloorEffects().Contains(pomander)</c>，但不複製清單（每幀呼叫用）。</summary>
+    public bool HasFloorEffect(Pomander pomander)
+    {
+        return floorEffects.Contains(pomander);
     }
 
     public bool IsNextFloorWith(Pomander pomander)

@@ -17,6 +17,9 @@ public class Configuration : IPluginConfiguration
     public bool ShowCofferInteractionRange { get; set; } = true;
     public bool ShowPatrolArrow { get; set; } = true;
 
+    // 需要 MonsterDex 才會顯示任何東西；沒裝時整個功能靜默關閉，所以預設開著不會有副作用。
+    public bool ShowMobVulnerabilities { get; set; } = true;
+
     public bool HighlightCoffers { get; set; } = true;
     public bool HighlightPassage { get; set; } = true;
 

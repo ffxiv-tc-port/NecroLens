@@ -27,7 +27,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
               new KeyValuePair<string, string>("en", Strings.ConfigWindow_Language_en),
               new KeyValuePair<string, string>("fr", Strings.ConfigWindow_Language_fr),
               new KeyValuePair<string, string>("ja", Strings.ConfigWindow_Language_ja),
-              new KeyValuePair<string, string>("zh", Strings.ConfigWindow_Language_zh),
+              new KeyValuePair<string, string>("zh-Hant", Strings.ConfigWindow_Language_zh),
               new KeyValuePair<string, string>("ko", Strings.ConfigWindow_Language_ko),
           }
       };  
@@ -58,6 +58,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
                             ClientLanguage.French => CultureInfo.GetCultureInfo("fr"),
                             ClientLanguage.German => CultureInfo.GetCultureInfo("de"),
                             ClientLanguage.Japanese => CultureInfo.GetCultureInfo("ja"),
+                            // 台服客戶端回報 ClientLanguage 7(TraditionalChinese),舊版 Dalamud 回報 4(ChineseSimplified);
+                            // 用數值比較,列舉裡有沒有 7 這個名字都編得過。
+                            (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => CultureInfo.GetCultureInfo("zh-Hant"),
                             _ => CultureInfo.GetCultureInfo("en")
                         };
                     }
@@ -73,7 +76,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         ImGui.Spacing();
         ImGui.SameLine();
         
-        if (ImGui.Button("Want to help with localization?"))
+        if (ImGui.Button(Strings.ConfigWindow_LocalizationHelp))
             Process.Start(new ProcessStartInfo
                               { FileName = "https://crowdin.com/project/necrolens", UseShellExecute = true });
         if (ImGui.BeginTabBar("MyTabBar", ImGuiTabBarFlags.None))
@@ -210,10 +213,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
     {
         var playerDotColor = ImGui.ColorConvertU32ToFloat4(conf.PlayerDotColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##playerDot", ref playerDotColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.PlayerDotColor = ImGui.ColorConvertFloat4ToU32(playerDotColor.WithAlpha(0xCC));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
 
@@ -245,19 +247,17 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         var normalAggroColor = ImGui.ColorConvertU32ToFloat4(conf.NormalAggroColor).WithoutAlpha();
         if (ImGui.ColorEdit3(Strings.ConfigWindow_ESPTab_ShowAggroRange_Proximity_and_Sight, ref normalAggroColor,
                              ImGuiColorEditFlags.NoInputs))
-        {
             conf.NormalAggroColor = ImGui.ColorConvertFloat4ToU32(normalAggroColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var soundAggroColor = ImGui.ColorConvertU32ToFloat4(conf.SoundAggroColor).WithoutAlpha();
         if (ImGui.ColorEdit3(Strings.ConfigWindow_ESPTab_ShowAggroRange_Sound, ref soundAggroColor,
                              ImGuiColorEditFlags.NoInputs))
-        {
             conf.SoundAggroColor = ImGui.ColorConvertFloat4ToU32(soundAggroColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.EndGroup();
 
@@ -275,6 +275,27 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         ImGui.Text(Strings.ConfigWindow_ESPTab_ShowPatrolArrow_Details);
         ImGui.Unindent(15);
         ImGui.EndGroup();
+
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        var showMobVulnerabilities = conf.ShowMobVulnerabilities;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_ShowVulnerabilities, ref showMobVulnerabilities))
+        {
+            conf.ShowMobVulnerabilities = showMobVulnerabilities;
+            Config.Save();
+        }
+
+        // 沒裝 MonsterDex 時整個功能是靜默關閉的，所以「為什麼勾了卻沒東西」必須在這一列看得見。
+        if (!VulnerabilityService.IsAvailable)
+        {
+            ImGui.SameLine();
+            ImGui.TextColored(Color.Orange.ToV4(), Strings.ConfigWindow_ESPTab_ShowVulnerabilities_Requires);
+        }
+
+        ImGui.Indent(15);
+        ImGui.Text(Strings.ConfigWindow_ESPTab_ShowVulnerabilities_Details);
+        ImGui.Unindent(15);
 
         ImGui.Separator();
         ImGui.Spacing();
@@ -305,10 +326,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var passageColor = ImGui.ColorConvertU32ToFloat4(conf.PassageColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##passage", ref passageColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.PassageColor = ImGui.ColorConvertFloat4ToU32(passageColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var highlightPassage = conf.HighlightPassage;
@@ -320,16 +340,45 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var votifeColor = ImGui.ColorConvertU32ToFloat4(conf.VotifeColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##votife", ref votifeColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.VotifeColor = ImGui.ColorConvertFloat4ToU32(votifeColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             Config.Save();
-        }
         ImGui.SameLine();
 
         var highlightVotife = conf.ShowVotife;
         if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Votife, ref highlightVotife))
         {
             conf.ShowVotife = highlightVotife;
+            Config.Save();
+        }
+
+        // 以下四項的介面開關:陷阱與模仿怪寶箱和 PalacePal 的顯示重疊(它有歷史記錄資料庫),
+        // 有開關才能把這兩項讓給 PalacePal。
+        var showTraps = conf.ShowTraps;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Traps, ref showTraps))
+        {
+            conf.ShowTraps = showTraps;
+            Config.Save();
+        }
+
+        var showMimicCoffer = conf.ShowMimicCoffer;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_MimicCoffer, ref showMimicCoffer))
+        {
+            conf.ShowMimicCoffer = showMimicCoffer;
+            Config.Save();
+        }
+
+        var showPassageName = conf.ShowPassage;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_PassageName, ref showPassageName))
+        {
+            conf.ShowPassage = showPassageName;
+            Config.Save();
+        }
+
+        var showReturn = conf.ShowReturn;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Return, ref showReturn))
+        {
+            conf.ShowReturn = showReturn;
             Config.Save();
         }
 
@@ -342,10 +391,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var bronzeCofferColor = ImGui.ColorConvertU32ToFloat4(conf.BronzeCofferColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##bronzeCoffer", ref bronzeCofferColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.BronzeCofferColor = ImGui.ColorConvertFloat4ToU32(bronzeCofferColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var showBronzeCoffers = conf.ShowBronzeCoffers;
@@ -357,10 +405,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var silverCofferColor = ImGui.ColorConvertU32ToFloat4(conf.SilverCofferColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##silverCoffer", ref silverCofferColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.SilverCofferColor = ImGui.ColorConvertFloat4ToU32(silverCofferColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var showSilverCoffers = conf.ShowSilverCoffers;
@@ -372,10 +419,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var goldCofferColor = ImGui.ColorConvertU32ToFloat4(conf.GoldCofferColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##goldCoffer", ref goldCofferColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.GoldCofferColor = ImGui.ColorConvertFloat4ToU32(goldCofferColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var showGoldCoffers = conf.ShowGoldCoffers;
@@ -387,10 +433,9 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
         var hoardColor = ImGui.ColorConvertU32ToFloat4(conf.HoardColor).WithoutAlpha();
         if (ImGui.ColorEdit3("##hoard", ref hoardColor, ImGuiColorEditFlags.NoInputs))
-        {
             conf.HoardColor = ImGui.ColorConvertFloat4ToU32(hoardColor.WithAlpha(0xFF));
+        if (ImGui.IsItemDeactivatedAfterEdit())
             conf.Save();
-        }
 
         ImGui.SameLine();
         var showHoards = conf.ShowHoards;

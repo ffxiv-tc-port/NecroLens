@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+<Project Sdk="Dalamud.NET.Sdk/13.0.0">
     <PropertyGroup>
         <Authors>Jukka</Authors>
-        <Version>1.0.8.12</Version>
         <Description>NecroLens Dalamud Plugin</Description>
-        <PackageProjectUrl>https://github.com/Jukkales/NecroLens</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/ffxiv-tc-port/NecroLens</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows7.0</TargetFramework>
+        <BuildNumberFile>$(MSBuildProjectDirectory)\BuildNumber.txt</BuildNumberFile>
+        <_PreviousBuildNumber Condition="Exists('$(BuildNumberFile)')">$([System.IO.File]::ReadAllText('$(BuildNumberFile)').Trim())</_PreviousBuildNumber>
+        <_PreviousBuildNumber Condition="'$(_PreviousBuildNumber)' == ''">0</_PreviousBuildNumber>
+        <BuildNumber>$([MSBuild]::Add($(_PreviousBuildNumber), 1))</BuildNumber>
+        <VersionPrefix>7.15.0</VersionPrefix>
+        <Version>$(VersionPrefix).$(BuildNumber)</Version>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+    </PropertyGroup>
+    <Target Name="PersistBuildNumber" AfterTargets="Build">
+        <WriteLinesToFile File="$(BuildNumberFile)" Lines="$(BuildNumber)" Overwrite="true" />
+    </Target>
+
+    <PropertyGroup>
+        <TargetFramework>net9.0-windows7.0</TargetFramework>
         <Platforms>x64</Platforms>
+        <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,51 +43,27 @@
         </Content>
     </ItemGroup>
 
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-        <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
-    </PropertyGroup>
-
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
         <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="ECommons" Version="3.1.0.6" />
-        <Reference Include="FFXIVClientStructs">
-            <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Dalamud">
-            <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="ImGuiScene">
-            <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Lumina">
-            <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Lumina.Excel">
-            <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="InteropGenerator.Runtime">
-            <HintPath>$(DalamudLibPath)InteropGenerator.Runtime.dll</HintPath>
-            <Private>False</Private>
-        </Reference>
+        <!-- ⚠️ 舊結論保留,但要講清楚它管的是哪一顆:公開 NuGet 的 ECommons 3.0.1.15 是
+             API14/global 世代的**二進位**套件,其 Svc 服務定位器與 API13 Dalamud 不相容 ——
+             這正是本 repo 先前釘 3.0.0.18-api13 的原因,那條結論沒有被推翻。
+             下面的子模組不受此限:它是**從原始碼**對本艦隊釘住的 API13 Dalamud 編出來的,
+             3.0.1.15 只是 fork 的 BaseVersion,與那顆 NuGet 二進位沒有關係。 -->
+        <!-- ECommons 走本 org 的 fork 子模組(BaseVersion 是 3.0.1.15,只換來源不換版本號)。
+             公開 NuGet 的 ECommons 沒有我們補的判空/加固,其中 AddonMaster / ClickHelper 對
+             AtkComponentBase.OwnerNode 零判空是 AVE 入口 —— AVE 在 .NET Core 是 corrupted-state
+             exception,try/catch 與 HookSafety.ExecuteSafe 都攔不到,所以來源必須是 fork。
+             🔴 版本號分不出來源:公開 NuGet 也有 3.0.1.15,判定只能看內容(加固版才有的
+             GenericHelpers.IsComponentEnabled 等成員,公開那顆是 0)。
+             驗法 tools/fleet/ecommons_hardening_check.py —— 兩軸:obj/project.assets.json 的
+             ECommons 條目是 type=project ＋ 出貨目錄那顆 ECommons.dll 的標記位元組。 -->
+        <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
     </ItemGroup>
-    
+
     <ItemGroup>
       <EmbeddedResource Update="data\Strings.resx">
         <Generator>ResXFileCodeGenerator</Generator>
@@ -89,4 +79,11 @@
       </Compile>
     </ItemGroup>
 
+    <!-- ECommons 的文件註解檔 ECommons.xml 執行期用不到：不複製進輸出目錄，出貨包也就不帶它（ECommons.pdb 照留，崩潰堆疊行號要用）。 -->
+    <Target Name="ExcludeECommonsXmlDoc" AfterTargets="ResolveAssemblyReferences">
+        <ItemGroup>
+            <_ECommonsXmlDoc Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'ECommons.xml'" />
+            <ReferenceCopyLocalPaths Remove="@(_ECommonsXmlDoc)" />
+        </ItemGroup>
+    </Target>
 </Project>

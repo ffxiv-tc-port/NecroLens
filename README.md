@@ -1,63 +1,43 @@
-[![Build](https://github.com/Jukkales/NecroLens/actions/workflows/build-plugin.yml/badge.svg)](https://github.com/Jukkales/NecroLens/actions/workflows/build-plugin.yml)
-[![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpuni.sh%2Fapi%2Frepository%2Fjukka&query=%24%5B0%5D.DownloadCount&label=Downloads&color=4DC71F
-)]()
-[![Last Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpuni.sh%2Fapi%2Frepository%2Fjukka&query=%24%5B0%5D.AssemblyVersion&label=release
-)]()
-[![Last Commit](https://img.shields.io/github/last-commit/Jukkales/NecroLens)]()
-
-[![image](https://discordapp.com/api/guilds/1001823907193552978/embed.png?style=banner2)](https://discord.gg/Zzrcc8kmvy)
-
-### Want to help with localization?
-https://crowdin.com/project/necrolens
-
 # NecroLens
-```
-https://puni.sh/api/repository/jukka
-```
 
-<img src="https://raw.githubusercontent.com/Jukkales/NecroLens/main/icon.png" width="100" height="100" align="left">
+[NecroLens](https://github.com/Jukkales/NecroLens) 的台服移植版。在**死者宮殿**、**天之御柱**、**正統優雷卡**這類深層迷宮中提供 ESP 透視顯示：能看穿牆壁、看到怪物的感知範圍與朝向。
 
-This Plugin allows you to explore a DeepDungeon with a tool like the HoloLens or GoogleGlass on.
-You will be able to see trough walls, see where monster are looking ore be aware of you and many more.
+進入上述副本時會自動開啟主視窗並開始繪製 ESP；意外關閉可用 `/necrolens` 重新開啟，`/necrolenscfg` 開啟設定視窗。
 
-This is an ESP hack (extrasensory perception), so don't use it if you not feel well.
+## 主要功能
 
-## Installation
-For installation instructions, please see my [custom plugin repo](https://github.com/Jukkales/DalamudPlugins).
+- **怪物 ESP**：依怪物的感知類型畫出範圍——感應（進入即觸發）畫大圓圈、視覺畫 90° 扇形視野、聽覺畫較近的圓圈並另畫碰撞體積；範圍只畫外框與淡色，巡邏怪物另畫移動方向箭頭。怪物名稱後可附上牠吃得到的行動抑制狀態（眩暈、加重、睡眠、束縛、減速；需要 MonsterDex，沒資料時顯示灰色的「?」）。
+- **迷宮物件標示**：寶箱（銅／銀／金）、埋藏的寶藏、擬態怪、傳送裝置（可顯示名稱）、回程裝置、陷阱、遺跡等物件；靠近時另外高亮寶箱與傳送裝置，並可畫出寶箱的可互動範圍。伺服器端才知道的隱形陷阱、寶箱擬態怪與埋藏的寶藏偵測不到（除非用了對應的魔陶器）。
+- **主視窗**：顯示層數、怪物重生時間、陷阱與傳送裝置狀態，以及本層發動的魔陶器效果（全景、咒印解除、幸運提升、寶箱增加、敵人減少、敵人變化；下一層才生效的會另外標示，正統優雷卡的魔科學器也算在內）。
+- **使用魔陶器**：`/pomander <名稱>` 依名稱使用魔陶器，可只打名稱的一部分（例：`/pomander 咒印`）。
+- **自動開箱**（實驗性，預設關）：進入寶箱的互動範圍時自動開一次，可選要開哪幾種寶箱；預設不開可能是擬態怪的寶箱。可能讓角色卡在寶箱旁，發生時請關掉。`/openchest` 可手動開最近的寶箱。
+- **選擇性資料回報**：可自願上傳樓層怪物資料給原作者的伺服器，協助校正數值，預設關閉。
 
-![image](screen.png)
+## 指令
 
-## Features
- - ESP draws for ever monster
-   - Proximity mobs will have a large circle around them. Tey aggro you once you step in
-   - Sight mobs wil have a 90° view in front and agro you once they see you in this area
-   - Sound mobs are like proximity mobs, but they only aggro you if you run ner to them or touch them
-   - Patrols always have a movement direction arrow
- - Detection of dungeon objects like chests, exit, return and so on
-   - The plugin can NOT detect whats not there. 
-   - Invisible Traps, Chest bombs and Hoards are ServerSide only! (expect you use a Pomander)
- - Highlight of objects once near
- - Respawn and Floor timer
- - Pomander tracker of static floor effects
- - Automatically opens chest for you once near
-   - Only when safe, max one time and it very rarely stuck you 
- - `/pomander` command
+- `/necrolens`：開啟主視窗
+- `/necrolenscfg`：開啟設定視窗
+- `/openchest`：開啟離你最近的寶箱
+- `/pomander <名稱>`：使用指定的魔陶器
 
-## Usage
-The Plugin is only active in **Palace of the Dead**, **Heaven on High** or **Eureka Orthos**. Once you enter this duties a Window opens up showing floor information and the ESP is drawing.
+## 台服版的修改
 
-If you accidentally closed the main window you can bring it back with the `/necrolens` chat command.
+- 怪物名稱後附上行動抑制弱點（資料取自 MonsterDex 的 IPC）。
+- 「本層發動的效果」支援正統優雷卡的魔科學器；補上部分天之御柱怪物與死者宮殿金寶箱擬態怪的資料。
+- 怪物資料的備援下載改從本 org 取得。
+- 進出深宮、換層、魔陶器等狀態改為讀遊戲結構與系統訊息取得，不靠特徵碼也不解析封包，遊戲改版後不會整個失效。
+- 多處降低記憶體用量。
+- 介面繁體中文化。
 
-## Planned Features
- - Mob Movement tracker
-   - Shows you an indicator if its safe to move or if the mob will soon move
- - Accurate aggro ranges
-   - Currently the aggro range is fixed but some mobs have slightly bigger or smaller ranges
-   - Tracking these and safe these values to be more precise
- - Better remaining kills detection
- - Pomander auto usage
- - Enemy AoE Radar
- - Trap/Hoard location logging
+## 需要搭配的插件
 
----
-_Special thanks to Leonhart for making the icon!_
+- 選用：MonsterDex（顯示怪物弱點）
+
+## 已知限制
+
+- 這是感知類（ESP）工具，會讓你看到原本看不到的資訊，介意的話請勿使用。
+- 隱形陷阱、寶箱擬態怪與埋藏的寶藏屬於伺服器端資料，插件本身偵測不到。
+
+翻譯協作：[Crowdin](https://crowdin.com/project/necrolens)
+
+原作者：[Jukkales](https://github.com/Jukkales/NecroLens)（感謝 Leonhart 繪製圖示）
