@@ -26,6 +26,12 @@ public static class ColorUtils
         return new Vector3(c.X, c.Y, c.Z);
     }
 
+    /// <summary>網頁慣用的 0xRRGGBB 換成 ImGui 的 0xAABBGGRR。</summary>
+    public static uint FromRgb(uint rgb, byte alpha = 0xFF)
+    {
+        return ((uint)alpha << 24) | ((rgb & 0xFF) << 16) | (rgb & 0xFF00) | ((rgb >> 16) & 0xFF);
+    }
+
     public static uint SetAlpha(this uint color, float alpha = 1f)
     {
         var red = (color >> 16) & 0xff;

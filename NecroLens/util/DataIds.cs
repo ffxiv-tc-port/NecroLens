@@ -107,6 +107,19 @@ public static class DataIds
         { 2014939, Strings.Traps_Fae_Trap },
     };
 
+    // 陷阱分色與 PalacePal 共用同一套 RGB;不在表裡的陷阱由呼叫端維持紅色。
+    public static readonly Dictionary<uint, uint> TrapColors = new()
+    {
+        { 2007182, ColorUtils.FromRgb(0xFF5A5A) }, // 地雷
+        { 2007183, ColorUtils.FromRgb(0xFFD24A) }, // 誘餌
+        { 2007184, ColorUtils.FromRgb(0xC77DFF) }, // 弱化
+        { 2007185, ColorUtils.FromRgb(0x4FC3F7) }, // 妨礙
+        { 2007186, ColorUtils.FromRgb(0x6EE07A) }, // 變身類:蛙變
+        { 2009504, ColorUtils.FromRgb(0x6EE07A) }, // 獺獺
+        { 2013284, ColorUtils.FromRgb(0x6EE07A) }, // 貓頭小鷹
+        { 2014939, ColorUtils.FromRgb(0x6EE07A) }, // 妖精
+    };
+
     public static readonly HashSet<uint> PassageIDs = new()
     {
         2007188, // PotD

@@ -20,6 +20,12 @@ public class Configuration : IPluginConfiguration
     // 需要 MonsterDex 才會顯示任何東西；沒裝時整個功能靜默關閉，所以預設開著不會有副作用。
     public bool ShowMobVulnerabilities { get; set; } = true;
 
+    // 名稱標籤字級＝Dalamud 預設字型大小的倍數。既有使用者的設定檔沒有這個鍵，吃到的就是這個初始值。
+    public float NameLabelScale { get; set; } = 1.3f;
+
+    // 只影響顯示；自動開箱的安全判斷不讀它。
+    public bool ShowPossibleMimicChests { get; set; } = true;
+
     public bool HighlightCoffers { get; set; } = true;
     public bool HighlightPassage { get; set; } = true;
 

@@ -63,4 +63,5 @@ public class PluginService
     public static Configuration Config { get; set; } = null!;
     public static DeepDungeonService DungeonService { get; set; } = null!;
     public static MobVulnerabilityService VulnerabilityService { get; set; } = null!;
+    public static ESPService EspService { get; set; } = null!;
 }

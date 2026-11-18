@@ -435,6 +435,19 @@ public unsafe class DeepDungeonService : IDisposable
         return !unsafeChest || (unsafeChest && conf.OpenUnsafeChests);
     }
 
+    /// <summary>
+    /// 本層這一級寶箱有沒有可能是擬態怪（只給標籤顯示用；自動開箱走 <see cref="CheckChestOpenSafe"/>）。
+    /// 銅寶箱恆為 false：銅級擬態怪是另一種物件（<see cref="ESPObject.ESPType.MimicChest"/>），已另外標出。
+    /// </summary>
+    public bool MayBeMimicChest(ESPObject.ESPType type)
+    {
+        var info = FloorSetInfo;
+        if (info == null) return false;
+
+        return (info.MimicChests == DeepDungeonContentInfo.MimicChests.Silver && type == ESPObject.ESPType.SilverChest) ||
+               (info.MimicChests == DeepDungeonContentInfo.MimicChests.Gold && type == ESPObject.ESPType.GoldChest);
+    }
+
     /// <summary><paramref name="gameObject"/>＝剛綁定 <paramref name="espObj"/> 的那個當幀物件。</summary>
     internal void TryInteract(ESPObject espObj, Dalamud.Game.ClientState.Objects.Types.IGameObject gameObject)
     {

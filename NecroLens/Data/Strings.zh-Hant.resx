@@ -413,4 +413,22 @@
   <data name="ESP_Vulnerability_Stun" xml:space="preserve">
     <value>眩</value>
   </data>
+  <data name="ESP_PossibleMimicChest" xml:space="preserve">
+    <value>可能是擬態怪</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_NameLabelScale" xml:space="preserve">
+    <value>名稱文字大小</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_NameLabelScale_Details" xml:space="preserve">
+    <value>怪物、寶箱、陷阱名稱的文字大小（Dalamud 預設字型的倍數）。
+名稱後面會墊一層半透明的深色底。</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests" xml:space="preserve">
+    <value>標示可能是擬態怪的寶箱</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests_Details" xml:space="preserve">
+    <value>在銀寶箱或金寶箱可能是擬態怪的樓層，於該等級寶箱名稱下方加一行淡紅色的「可能是擬態怪」。
+銀、金寶箱的擬態怪在打開前和一般寶箱完全相同，這裡只能標出「本層這一級寶箱有風險」。
+銅寶箱的擬態怪是另一種物件，會直接標出。只影響顯示，不影響自動開寶箱。</value>
+  </data>
 </root>

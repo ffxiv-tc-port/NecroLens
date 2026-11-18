@@ -472,4 +472,22 @@ Data is provided by the MonsterDex plugin.</value>
   <data name="ESP_Vulnerability_Stun" xml:space="preserve">
     <value>Stn</value>
   </data>
+  <data name="ESP_PossibleMimicChest" xml:space="preserve">
+    <value>Possible mimic</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_NameLabelScale" xml:space="preserve">
+    <value>Name label size</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_NameLabelScale_Details" xml:space="preserve">
+    <value>Text size of enemy, coffer and trap names (multiple of the Dalamud default font size).
+Names are drawn on a semi-transparent dark background.</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests" xml:space="preserve">
+    <value>Mark coffers that may be mimics</value>
+  </data>
+  <data name="ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests_Details" xml:space="preserve">
+    <value>On floors where silver or gold coffers can be mimics, adds a faded &quot;Possible mimic&quot; line under those coffers.
+Silver and gold mimics look exactly like real coffers until opened; this only marks that tier as risky on this floor.
+Bronze mimics are a different object and are marked directly. Display only, does not affect opening coffers.</value>
+  </data>
 </root>

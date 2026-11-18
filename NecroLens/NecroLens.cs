@@ -59,6 +59,7 @@ public sealed class NecroLens : IDalamudPlugin
         VulnerabilityService = mobVulnerabilityService;
 
         espService = new ESPService();
+        EspService = espService;
 
         deepDungeonService = new DeepDungeonService();
         DungeonService = deepDungeonService;

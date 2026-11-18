@@ -8,6 +8,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Game;
 using NecroLens.Data;
 using NecroLens.Model;
+using NecroLens.Service;
 using NecroLens.util;
 
 namespace NecroLens.Windows;
@@ -232,6 +233,24 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
         ImGui.Separator();
         ImGui.Spacing();
 
+        var nameLabelScale = conf.NameLabelScale;
+        ImGui.SetNextItemWidth(150);
+        if (ImGui.SliderFloat(Strings.ConfigWindow_ESPTab_NameLabelScale, ref nameLabelScale,
+                              ESPService.MinLabelScale, ESPService.MaxLabelScale, "%.2f"))
+            conf.NameLabelScale = Math.Clamp(nameLabelScale, ESPService.MinLabelScale, ESPService.MaxLabelScale);
+        // 拖動中不重建字型，放開才存檔並重建一次。
+        if (ImGui.IsItemDeactivatedAfterEdit())
+        {
+            conf.Save();
+            EspService.RebuildLabelFont();
+        }
+
+        ImGui.Indent(15);
+        ImGui.Text(Strings.ConfigWindow_ESPTab_NameLabelScale_Details);
+        ImGui.Unindent(15);
+        ImGui.Separator();
+        ImGui.Spacing();
+
         ImGui.BeginGroup();
         var showMobViews = conf.ShowMobViews;
         if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_ShowAggroRange, ref showMobViews))
@@ -367,6 +386,17 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
             conf.ShowMimicCoffer = showMimicCoffer;
             Config.Save();
         }
+
+        var showPossibleMimicChests = conf.ShowPossibleMimicChests;
+        if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests, ref showPossibleMimicChests))
+        {
+            conf.ShowPossibleMimicChests = showPossibleMimicChests;
+            Config.Save();
+        }
+
+        ImGui.Indent(15);
+        ImGui.Text(Strings.ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests_Details);
+        ImGui.Unindent(15);
 
         var showPassageName = conf.ShowPassage;
         if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_PassageName, ref showPassageName))

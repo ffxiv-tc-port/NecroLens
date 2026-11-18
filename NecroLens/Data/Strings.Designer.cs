@@ -1066,6 +1066,51 @@ namespace NecroLens.Data {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Possible mimic.
+        /// </summary>
+        internal static string ESP_PossibleMimicChest {
+            get {
+                return ResourceManager.GetString("ESP_PossibleMimicChest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name label size.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_NameLabelScale {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_NameLabelScale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Text size of enemy, coffer and trap names (multiple of the Dalamud default font size). ....
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_NameLabelScale_Details {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_NameLabelScale_Details", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mark coffers that may be mimics.
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On floors where silver or gold coffers can be mimics, adds a faded &quot;Possible mimic&quot; line under those coffers. ....
+        /// </summary>
+        internal static string ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests_Details {
+            get {
+                return ResourceManager.GetString("ConfigWindow_ESPTab_HighlightObjects_PossibleMimicChests_Details", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Slw.
         /// </summary>
         internal static string ESP_Vulnerability_Slow {

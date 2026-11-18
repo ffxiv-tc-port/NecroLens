@@ -314,9 +314,10 @@ public class ESPObject
                 };
             case ESPType.FriendlyEnemy:
                 return Color.LightGreen.ToUint();
+            case ESPType.Trap:
+                return DataIds.TrapColors.TryGetValue(BaseId, out var trapColor) ? trapColor : Color.Red.ToUint();
             case ESPType.Mimic:
             case ESPType.MimicChest:
-            case ESPType.Trap:
                 return Color.Red.ToUint();
             case ESPType.Return:
                 return Color.LightBlue.ToUint();

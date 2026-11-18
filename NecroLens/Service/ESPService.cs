@@ -6,6 +6,7 @@ using System.Threading;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Plugin.Services;
 using Dalamud.Bindings.ImGui;
 using NecroLens.Model;
@@ -28,12 +29,19 @@ public class ESPService : IDisposable
     private bool poolsBound;
     private readonly List<ESPObject> entityList = new();
 
+    // 名稱標籤用的字型，只在建構與字級設定改完時重建（不每幀建）。還沒建好時 Push 什麼都不推＝退回預設字型。
+    private IFontHandle? labelFontHandle;
+    // OnUpdate 推入字型後抄下的當幀字型與字級；只在繪製執行緒讀寫，IsNull＝DrawName 用目前字型。
+    private ImFontPtr labelFont;
+    private float labelFontSize;
+
     public ESPService()
     {
         PluginLog.Debug("ESP Service loading...");
 
         mapObjects = new List<ESPObject>();
         conf = Config;
+        RebuildLabelFont();
 
         PluginInterface.UiBuilder.Draw += OnUpdate;
         ClientState.TerritoryChanged += OnCleanup;
@@ -48,8 +56,23 @@ public class ESPService : IDisposable
         mapObjects.Clear();
         entityList.Clear();
         foreach (var pool in espPools) pool.Clear();
+        labelFontHandle?.Dispose();
+        labelFontHandle = null;
         PluginLog.Information("ESP Service unloaded");
     }
+
+    /// <summary>依 <see cref="Configuration.NameLabelScale"/> 重建名稱標籤字型。設定改完才呼叫，不可每幀呼叫。</summary>
+    public void RebuildLabelFont()
+    {
+        var scale = Math.Clamp(conf.NameLabelScale, MinLabelScale, MaxLabelScale);
+        labelFontHandle?.Dispose();
+        // 負值＝Dalamud 預設字型大小的倍數；AddDalamudDefaultFont 會補上遊戲符號與繁中字形，和預設字型同一套。
+        labelFontHandle = PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(
+            e => e.OnPreBuild(tk => tk.AddDalamudDefaultFont(-scale)));
+    }
+
+    public const float MinLabelScale = 0.8f;
+    public const float MaxLabelScale = 2f;
 
 
     /**
@@ -74,7 +97,13 @@ public class ESPService : IDisposable
                 if (!Monitor.TryEnter(mapObjects)) return;
 
                 var drawList = ImGui.GetBackgroundDrawList();
-                foreach (var gameObject in mapObjects) DrawEspObject(drawList, gameObject);
+                using (labelFontHandle?.Push())
+                {
+                    labelFont = ImGui.GetFont();
+                    labelFontSize = ImGui.GetFontSize();
+                    foreach (var gameObject in mapObjects) DrawEspObject(drawList, gameObject);
+                    labelFont = default;
+                }
 
                 Monitor.Exit(mapObjects);
             }
@@ -122,9 +151,6 @@ public class ESPService : IDisposable
 
             if (conf.ShowPlayerDot && type == ESPObject.ESPType.Player)
                 DrawPlayerDot(drawList, position2D);
-
-            if (DoDrawName(espObject))
-                DrawName(drawList, espObject, position2D);
 
             if (espObject.Type == ESPObject.ESPType.AccursedHoard && conf.ShowHoards && !DungeonService.FloorDetails.HoardFound)
             {
@@ -200,6 +226,10 @@ public class ESPService : IDisposable
                 }
             }
         }
+
+        // 名稱最後畫：帶底色的標籤要壓在自己的圈、仇恨範圍之上才看得清楚。
+        if (onScreen && DoDrawName(espObject))
+            DrawName(drawList, espObject, position2D, labelFont, labelFontSize);
     }
 
     /**

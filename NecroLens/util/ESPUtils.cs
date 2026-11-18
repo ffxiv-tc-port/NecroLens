@@ -79,11 +79,20 @@ public static class ESPUtils
     private static readonly LabelBuffer NameLabel = new();
     private static readonly LabelBuffer VulnerabilityLabel = new();
 
-    public static void DrawName(ImDrawListPtr drawList, ESPObject espObject, Vector2 position)
+    // 標籤底色：中性黑、約 60% 不透明（0xAABBGGRR）。
+    private const uint LabelBackgroundColor = 0x99000000;
+
+    // 「可能是擬態怪」＝淡色；真正冒出來的擬態怪是實色紅。
+    private static readonly uint PossibleMimicColor = ColorUtils.FromRgb(0xFF5A5A, 0x8C);
+
+    /// <param name="font">標籤字型；IsNull＝用目前的字型與字級（<paramref name="fontSize"/> 一併忽略）。</param>
+    public static void DrawName(
+        ImDrawListPtr drawList, ESPObject espObject, Vector2 position, ImFontPtr font = default, float fontSize = 0f)
     {
         var label = NameLabel;
         label.Clear();
         espObject.AppendName(label);
+        if (label.Length == 0) return;
 
         if (espObject.Type == ESPObject.ESPType.GoldChest && espObject.ContainingPomander != null)
         {
@@ -98,7 +107,7 @@ public static class ESPUtils
         vulnerability.Clear();
         var hasVulnerability = false;
         var vulnerabilityColor = 0u;
-        if (Config.ShowMobVulnerabilities && label.Length > 0 && espObject.NameId != 0 &&
+        if (Config.ShowMobVulnerabilities && espObject.NameId != 0 &&
             espObject.Type is ESPObject.ESPType.Enemy or ESPObject.ESPType.Mimic &&
             VulnerabilityService.IsAvailable)
         {
@@ -109,25 +118,50 @@ public static class ESPUtils
             vulnerabilityColor = flags < 0 ? Color.Gray.ToUint() : Color.Aquamarine.ToUint();
         }
 
+        var possibleMimic = Config.ShowPossibleMimicChests && DungeonService.MayBeMimicChest(espObject.Type);
+
+        if (font.IsNull)
+        {
+            font = ImGui.GetFont();
+            fontSize = ImGui.GetFontSize();
+        }
+
         var name = label.Span;
-        var textSize = ImGui.CalcTextSize(name);
-        var vulnerabilitySize = hasVulnerability ? ImGui.CalcTextSize(vulnerability.Span) : Vector2.Zero;
+        var nameSize = ImGui.CalcTextSizeA(font, fontSize, float.MaxValue, 0f, name, out _);
+
+        // 名稱可能是多行（金寶箱的魔陶器、除錯資訊），縮寫要接在第一行的尾巴，不能拿整塊的寬度去推位置。
+        var firstLineWidth = nameSize.X;
+        var lineBreak = name.IndexOf('\n');
+        if (lineBreak >= 0)
+            firstLineWidth = ImGui.CalcTextSizeA(font, fontSize, float.MaxValue, 0f, name[..lineBreak], out _).X;
+
+        var vulnerabilityWidth = hasVulnerability
+                                     ? ImGui.CalcTextSizeA(font, fontSize, float.MaxValue, 0f, vulnerability.Span, out _).X
+                                     : 0f;
+        var mimicText = possibleMimic ? Strings.ESP_PossibleMimicChest : null;
+        var mimicSize = mimicText != null
+                            ? ImGui.CalcTextSizeA(font, fontSize, float.MaxValue, 0f, mimicText, out _)
+                            : Vector2.Zero;
+
+        var blockSize = new Vector2(MathF.Max(MathF.Max(nameSize.X, firstLineWidth + vulnerabilityWidth), mimicSize.X),
+                                    nameSize.Y + mimicSize.Y);
         // Center name on position
-        var textPosition = new Vector2(position.X - ((textSize.X + vulnerabilitySize.X) / 2f),
-                                       position.Y + (textSize.Y / 2f));
-        drawList.AddText(textPosition, espObject.RenderColor(), name);
+        var textPosition = new Vector2(position.X - (blockSize.X / 2f), position.Y + (nameSize.Y / 2f));
+
+        // 底色涵蓋全部行與弱點縮寫，所以要先量完整塊再畫。
+        var padding = new Vector2(fontSize * 0.3f, fontSize * 0.12f);
+        drawList.AddRectFilled(textPosition - padding, textPosition + blockSize + padding, LabelBackgroundColor,
+                               fontSize * 0.25f);
+
+        drawList.AddText(font, fontSize, textPosition, espObject.RenderColor(), name);
 
         if (hasVulnerability)
-        {
-            // 名稱可能是多行（金寶箱的魔石、除錯資訊），縮寫要接在第一行的尾巴，
-            // 不能拿整塊的寬度去推位置。
-            var firstLine = name;
-            var lineBreak = name.IndexOf('\n');
-            if (lineBreak >= 0) firstLine = name[..lineBreak];
-
-            drawList.AddText(textPosition with { X = textPosition.X + ImGui.CalcTextSize(firstLine).X },
+            drawList.AddText(font, fontSize, textPosition with { X = textPosition.X + firstLineWidth },
                              vulnerabilityColor, vulnerability.Span);
-        }
+
+        if (mimicText != null)
+            drawList.AddText(font, fontSize, textPosition with { Y = textPosition.Y + nameSize.Y },
+                             PossibleMimicColor, mimicText);
     }
 
     public static void DrawPlayerDot(ImDrawListPtr drawList, Vector2 position)
