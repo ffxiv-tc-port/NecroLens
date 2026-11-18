@@ -62,7 +62,11 @@ public class ESPObject
 
     private readonly record struct CachedName(uint BaseId, uint NameId, ObjectKind Kind, string Name);
 
+    // mobInfo 是 MobInfoService 字典裡的共用實例（同一種怪的所有物件共用），只讀不寫；
+    // 梯段覆寫值另存在下面兩個欄位，每次 Bind 重算。
     private MobInfo? mobInfo;
+    private bool? patrolOverride;
+    private ESPAggroType? aggroTypeOverride;
 
     // 綁定當下抄下的身分。address 只拿來和物件表那一格現在的位址比相等，比對成功之前不解參。
     private nint address;
@@ -86,6 +90,8 @@ public class ESPObject
         Type = ESPType.Enemy;
         SightRadian = 1.571f;
         this.mobInfo = mobInfo;
+        patrolOverride = null;
+        aggroTypeOverride = null;
 
         address = gameObject.Address;
         objectIndex = gameObject.ObjectIndex;
@@ -109,22 +115,14 @@ public class ESPObject
             if (DeepDungeonContentInfo.ContentMobInfoChanges.TryGetValue(
                     DungeonService.CurrentContentId, out var overrideInfos))
             {
-                var npc = (IBattleNpc)gameObject;
-                var npcNameId = npc.NameId;
-                MobInfo? mob = null;
                 foreach (var m in overrideInfos)
                 {
-                    if (m.Id == npcNameId)
+                    if (m.Id == NameId)
                     {
-                        mob = m;
+                        patrolOverride = m.Patrol;
+                        aggroTypeOverride = m.AggroType;
                         break;
                     }
-                }
-
-                if (mob != null)
-                {
-                    this.mobInfo.Patrol = mob.Patrol ?? this.mobInfo.Patrol;
-                    this.mobInfo.AggroType = mob.AggroType ?? this.mobInfo.AggroType;
                 }
             }
 
@@ -178,6 +176,8 @@ public class ESPObject
     {
         address = 0;
         mobInfo = null;
+        patrolOverride = null;
+        aggroTypeOverride = null;
         ContainingPomander = null;
     }
 
@@ -254,7 +254,7 @@ public class ESPObject
 
     public ESPAggroType AggroType()
     {
-        return mobInfo?.AggroType ?? ESPAggroType.Proximity;
+        return aggroTypeOverride ?? mobInfo?.AggroType ?? ESPAggroType.Proximity;
     }
 
     public ESPDangerLevel DangerLevel()
@@ -280,7 +280,7 @@ public class ESPObject
             return BaseId == 8922;
         }
 
-        return mobInfo?.Patrol ?? false;
+        return patrolOverride ?? mobInfo?.Patrol ?? false;
     }
 
     public float InteractionDistance()
