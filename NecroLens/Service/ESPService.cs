@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
-using System.Threading;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -20,6 +19,7 @@ public class ESPService : IDisposable
 {
     private readonly Configuration conf;
 
+    // 刻意不加鎖：Draw（Present）、Framework.Update、TerritoryChanged 都在遊戲主執行緒上依序跑，沒有並行存取。
     private readonly List<ESPObject> mapObjects;
 
     // 兩組輪流重用的 ESPObject：一組掛在 mapObjects 給繪製端，另一組在本 tick 重新綁定。
@@ -80,9 +80,7 @@ public class ESPService : IDisposable
      */
     private void OnCleanup(ushort e)
     {
-        Monitor.Enter(mapObjects);
         mapObjects.Clear();
-        Monitor.Exit(mapObjects);
     }
 
     /**
@@ -94,8 +92,6 @@ public class ESPService : IDisposable
         {
             if (ShouldDraw())
             {
-                if (!Monitor.TryEnter(mapObjects)) return;
-
                 var drawList = ImGui.GetBackgroundDrawList();
                 using (labelFontHandle?.Push())
                 {
@@ -104,8 +100,6 @@ public class ESPService : IDisposable
                     foreach (var gameObject in mapObjects) DrawEspObject(drawList, gameObject);
                     labelFont = default;
                 }
-
-                Monitor.Exit(mapObjects);
             }
         }
         catch (Exception e)
@@ -296,10 +290,8 @@ public class ESPService : IDisposable
                             entityList.Add(RentEspObject(pool, ref used, obj, null));
                     }
 
-                    Monitor.Enter(mapObjects);
                     mapObjects.Clear();
                     mapObjects.AddRange(entityList);
-                    Monitor.Exit(mapObjects);
                     published = true;
                 }
                 finally
@@ -322,9 +314,7 @@ public class ESPService : IDisposable
             else
             {
                 // ShouldDraw() 為 false 時也要清空：不在深宮時不留任何上一層的物件。
-                Monitor.Enter(mapObjects);
                 mapObjects.Clear();
-                Monitor.Exit(mapObjects);
 
                 if (poolsBound)
                 {
