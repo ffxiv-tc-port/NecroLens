@@ -63,6 +63,8 @@ public class Configuration : IPluginConfiguration
     
     public bool ShowDebugInformation { get; set; } = false;
     
+    // 刻意不再讀：上傳到作者伺服器的資料收集已移除（深層迷宮資料只下載不上傳）。
+    // 欄位保留，舊設定檔照常反序列化、存檔時原樣寫回。
     public string? UniqueId { get; set; }
     public bool OptInDataCollection { get; set; } = false;
     public string Language { get; set; } = "";

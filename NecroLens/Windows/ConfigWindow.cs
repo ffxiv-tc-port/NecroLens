@@ -112,25 +112,6 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
 
     private void DrawDebugTab()
     {
-        var optInCollection = conf.OptInDataCollection;
-        if (ImGui.Checkbox("Opt-In Data Collection", ref optInCollection))
-        {
-            conf.OptInDataCollection = optInCollection;
-            if (conf.OptInDataCollection && conf.UniqueId == null)
-            {
-                conf.UniqueId = Guid.NewGuid().ToString();
-            }
-            Config.Save();
-        }
-
-        ImGui.Indent(15);
-        ImGui.Text("Help me improve NecroLens by enabling data collection.\n" +
-                   "This will send information about every enemy and some other objects anonymously to my server.\n" +
-                   "It contains only enemy and object id's and names per floor and a \'party-id\' for separation.\n\n" +
-                   "Absolutely no information linking to any players or accounts will be collected.");
-        ImGui.Unindent(15);
-        
-        ImGui.Separator();
         var showDebugInformation = conf.ShowDebugInformation;
         if (ImGui.Checkbox(Strings.ConfigWindow_ExtrasTab_ShowDebugInformation, ref showDebugInformation))
         {

@@ -282,7 +282,6 @@ public class ESPService : IDisposable
                             DungeonService.TryInteract(espObj, obj);
 
                             entityList.Add(espObj);
-                            DungeonService.TrackFloorObjects(obj);
                         }
 
                         if (ObjectTable.LocalPlayer != null &&

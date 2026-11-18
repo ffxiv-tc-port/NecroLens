@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud.Game.ClientState.Objects.Types;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using NecroLens.util;
-using Newtonsoft.Json;
 using static NecroLens.util.DeepDungeonUtil;
 
 namespace NecroLens.Model;
@@ -17,7 +11,6 @@ public class FloorDetails
 {
     public readonly Dictionary<uint, Pomander> DoubleChests = new();
     private readonly List<Pomander> floorEffects = [];
-    public readonly Dictionary<uint, FloorObject> FloorObjects = new();
     public readonly List<uint> InteractionList = [];
 
     private readonly List<Pomander> usedPomanders = [];
@@ -35,7 +28,6 @@ public class FloorDetails
         usedPomanders.Clear();
         floorEffects.Clear();
         InteractionList.Clear();
-        FloorObjects.Clear();
         DoubleChests.Clear();
         FloorVerified = false;
         CurrentFloor = 0;
@@ -50,7 +42,6 @@ public class FloorDetails
 
             // Reset
             InteractionList.Clear();
-            FloorObjects.Clear();
             DoubleChests.Clear();
 
             // Apply effects
@@ -173,92 +164,6 @@ public class FloorDetails
         var time = (int)(now - FloorStartTime).TotalSeconds;
         if (now > NextRespawn) NextRespawn = now.AddSeconds(RespawnTime);
         return time;
-    }
-
-    /// <summary><paramref name="gameObject"/> 只在當幀有效，不可存起來。</summary>
-    public void TrackFloorObjects(IGameObject gameObject, int currentContentId)
-    {
-        if (FloorTransfer
-            || IsIgnored(gameObject.BaseId)
-            || FloorObjects.ContainsKey(gameObject.EntityId)) return;
-
-        var obj = new FloorObject();
-        obj.DataId = gameObject.BaseId;
-        if (gameObject is IBattleNpc npcObj)
-        {
-            obj.NameId = npcObj.NameId;
-            obj.Name = npcObj.Name.TextValue;
-        }
-
-        obj.ContentId = currentContentId;
-        obj.Floor = CurrentFloor;
-        obj.HitboxRadius = gameObject.HitboxRadius;
-        FloorObjects[gameObject.EntityId] = obj;
-    }
-
-    private bool IsIgnored(uint dataId)
-    {
-        return DataIds.ReturnIDs.Contains(dataId)
-               || DataIds.PassageIDs.Contains(dataId)
-               || DataIds.TrapIDs.ContainsKey(dataId)
-               || DataIds.GoldChest == dataId
-               || DataIds.SilverChest == dataId
-               || DataIds.MimicChest == dataId
-               || DataIds.BronzeChestIDs.Contains(dataId)
-               || DataIds.AccursedHoard == dataId
-               || DataIds.AccursedHoardCoffer == dataId;
-    }
-
-    public void DumpFloorObjects(int currentContentId)
-    {
-        if (Config.OptInDataCollection)
-        {
-            var result = new Dictionary<uint, DataCollector.MobData>();
-
-            foreach (var keyValuePair in FloorObjects)
-            {
-                DataCollector.MobData data = new()
-                {
-                    DataId = keyValuePair.Value.DataId,
-                    NameId = keyValuePair.Value.NameId,
-                    ContentId = currentContentId,
-                    Floor = CurrentFloor,
-                    HitboxRadius = keyValuePair.Value.HitboxRadius,
-                    MoveTimes = [],     // TODO
-                    AggroDistances = [] // TODO
-                };
-                result.TryAdd(data.DataId, data);
-            }
-
-            var collector = new DataCollector
-            {
-                Sender = Config.UniqueId!,
-                Party = PartyList.PartyId.ToString(),
-                Data = new Collection<DataCollector.MobData>(result.Values.ToList())
-            };
-
-            var json = JsonConvert.SerializeObject(collector,
-                                                   Formatting.Indented,
-                                                   new JsonSerializerSettings
-                                                   {
-                                                       NullValueHandling = NullValueHandling.Ignore
-                                                   });
-            PluginLog.Debug("Sending Data: \n" + json);
-
-            Task.Factory.StartNew(async () =>
-            {
-                using var client = new HttpClient();
-                try
-                {
-                    await client.PostAsync("https://necrolens.jusrv.de/api/import2",
-                                           new StringContent(json, Encoding.UTF8, "application/json"));
-                }
-                catch (Exception e)
-                {
-                    PluginLog.Debug(e, "Failed to send data to server");
-                }
-            });
-        }
     }
 
     public List<Pomander> GetFloorEffects()

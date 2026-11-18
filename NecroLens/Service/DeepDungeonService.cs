@@ -239,8 +239,6 @@ public unsafe class DeepDungeonService : IDisposable
     {
         PluginLog.Information($"ContentID {CurrentContentId} - 離開深宮");
 
-        FloorDetails.DumpFloorObjects(CurrentContentId);
-
         FloorSetInfo = null;
         FloorDetails.Clear();
         lastFloor = 0;
@@ -266,9 +264,6 @@ public unsafe class DeepDungeonService : IDisposable
         PluginLog.Information($"樓層變化:{lastFloor} -> {floor}");
         lastFloor = floor;
 
-        // 先把上一層的資料倒出去(此時 CurrentFloor 仍是舊樓層),再前進
-        FloorDetails.DumpFloorObjects(CurrentContentId);
-        FloorDetails.FloorObjects.Clear();
         FloorDetails.FloorTransfer = true;
         FloorDetails.NextFloor();
         FloorDetails.CurrentFloor = floor; // 以結構為準
@@ -579,10 +574,5 @@ public unsafe class DeepDungeonService : IDisposable
         PrintChatMessage(string.Format(Strings.Pomander_Using, displayName));
         PluginLog.Debug($"/pomander:{displayName} -> 欄位 {slot}");
         dd->UsePomander((uint)slot);
-    }
-
-    public void TrackFloorObjects(Dalamud.Game.ClientState.Objects.Types.IGameObject gameObject)
-    {
-        FloorDetails.TrackFloorObjects(gameObject, CurrentContentId);
     }
 }
