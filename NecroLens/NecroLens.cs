@@ -7,6 +7,7 @@ using Dalamud.Game;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
+using NecroLens.Data;
 using NecroLens.Model;
 using NecroLens.Service;
 using NecroLens.Windows;
@@ -43,7 +44,7 @@ public sealed class NecroLens : IDalamudPlugin
 
         // 指令的 HelpMessage 在 PluginCommands 建構當下就從 resx 取值並固定下來,
         // 語系必須在那之前套用,否則 /xlhelp 與插件安裝器的指令清單會落回英文。
-        ApplyUiCulture();
+        ApplyLanguage();
 
         pluginCommands = new PluginCommands();
         configWindow = new ConfigWindow();
@@ -70,25 +71,20 @@ public sealed class NecroLens : IDalamudPlugin
         PluginInterface.UiBuilder.OpenConfigUi += ShowConfigWindow;
     }
 
-    private static void ApplyUiCulture()
+    // 只設本插件的資源文化，不動行程全域的 DefaultThreadCurrentUICulture（那會改到其他插件，且平行載入下時機不固定）。
+    // 台服客戶端回報 ClientLanguage 7，舊版 Dalamud 回報 4；用數值比較，列舉裡有沒有 7 這個名字都編得過。
+    internal static void ApplyLanguage()
     {
-        if (Config.Language == "")
-        {
-            CultureInfo.DefaultThreadCurrentUICulture = ClientState.ClientLanguage switch
+        Strings.Culture = Config.Language != ""
+            ? CultureInfo.GetCultureInfo(Config.Language)
+            : ClientState.ClientLanguage switch
             {
                 ClientLanguage.French => CultureInfo.GetCultureInfo("fr"),
                 ClientLanguage.German => CultureInfo.GetCultureInfo("de"),
                 ClientLanguage.Japanese => CultureInfo.GetCultureInfo("ja"),
-                // 台服客戶端回報 ClientLanguage 7(TraditionalChinese),舊版 Dalamud 回報 4(ChineseSimplified);
-                // 用數值比較,列舉裡有沒有 7 這個名字都編得過。
                 (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => CultureInfo.GetCultureInfo("zh-Hant"),
                 _ => CultureInfo.GetCultureInfo("en")
             };
-        }
-        else
-        {
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(Config.Language);
-        }
     }
 
     public void Dispose()

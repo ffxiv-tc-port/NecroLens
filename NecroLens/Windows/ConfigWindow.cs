@@ -52,23 +52,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
                 {
                     conf.Language = language.Key;
                     Config.Save();
-                    if (language.Key == "")
-                    {
-                        CultureInfo.DefaultThreadCurrentUICulture = ClientState.ClientLanguage switch
-                        {
-                            ClientLanguage.French => CultureInfo.GetCultureInfo("fr"),
-                            ClientLanguage.German => CultureInfo.GetCultureInfo("de"),
-                            ClientLanguage.Japanese => CultureInfo.GetCultureInfo("ja"),
-                            // 台服客戶端回報 ClientLanguage 7(TraditionalChinese),舊版 Dalamud 回報 4(ChineseSimplified);
-                            // 用數值比較,列舉裡有沒有 7 這個名字都編得過。
-                            (ClientLanguage)4 or (ClientLanguage)5 or (ClientLanguage)7 => CultureInfo.GetCultureInfo("zh-Hant"),
-                            _ => CultureInfo.GetCultureInfo("en")
-                        };
-                    }
-                    else
-                    {
-                        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(conf.Language);
-                    }
+                    NecroLens.ApplyLanguage();
                 }
             }
             ImGui.EndCombo();
