@@ -129,8 +129,13 @@ public unsafe class DeepDungeonService : IDisposable
         return result.ToArray();
     }
 
+    /// <summary>每幀、所有區域都會呼叫：位址對不上時回 null（＝當成不在深宮），不擲例外。</summary>
     private static InstanceContentDeepDungeon* GetDeepDungeon()
     {
+        if (!GameFunctions.Resolved(EventFramework.StaticAddressPointers.ppInstance)
+            || !GameFunctions.Resolved(EventFramework.MemberFunctionPointers.GetInstanceContentDirector))
+            return null;
+
         var eventFramework = EventFramework.Instance();
         return eventFramework == null ? null : eventFramework->GetInstanceContentDeepDungeon();
     }
@@ -465,13 +470,18 @@ public unsafe class DeepDungeonService : IDisposable
             if (type == ESPObject.ESPType.SilverChest && player.CurrentHp <= player.MaxHp * 0.77) return;
 
             if (CheckChestOpenSafe(type) && espObj.Distance() <= espObj.InteractionDistance()
-                                         && !FloorDetails.InteractionList.Contains(espObj.EntityId))
+                                         && !FloorDetails.InteractionList.Contains(espObj.EntityId)
+                                         && CanInteract())
             {
                 TargetSystem.Instance()->InteractWithObject((GameObject*)gameObject.Address);
                 FloorDetails.InteractionList.Add(espObj.EntityId);
             }
         }
     }
+
+    private static bool CanInteract() =>
+        GameFunctions.Resolved(TargetSystem.StaticAddressPointers.pInstance)
+        && GameFunctions.Resolved(TargetSystem.MemberFunctionPointers.InteractWithObject);
 
     public void TryNearestOpenChest()
     {
@@ -484,7 +494,8 @@ public unsafe class DeepDungeonService : IDisposable
                     DataIds.GoldChest == dataId || DataIds.AccursedHoardCoffer == dataId)
                 {
                     var espObj = new ESPObject(obj);
-                    if (CheckChestOpenSafe(espObj.Type) && espObj.Distance() <= espObj.InteractionDistance())
+                    if (CheckChestOpenSafe(espObj.Type) && espObj.Distance() <= espObj.InteractionDistance()
+                        && CanInteract())
                     {
                         TargetSystem.Instance()->InteractWithObject((GameObject*)obj.Address);
                         break;
@@ -527,6 +538,12 @@ public unsafe class DeepDungeonService : IDisposable
         }
 
         if (!item.IsUsable)
+        {
+            PrintChatMessage(string.Format(Strings.Pomander_NotUsableNow, displayName));
+            return;
+        }
+
+        if (!GameFunctions.Resolved(InstanceContentDeepDungeon.MemberFunctionPointers.UsePomander))
         {
             PrintChatMessage(string.Format(Strings.Pomander_NotUsableNow, displayName));
             return;

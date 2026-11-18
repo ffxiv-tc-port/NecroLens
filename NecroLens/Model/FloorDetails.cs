@@ -91,6 +91,9 @@ public class FloorDetails
         if (addon->UldManager.LoadedState != AtkLoadState.Loaded)
             return 0;
 
+        if (!GameFunctions.Resolved(AtkUnitBase.MemberFunctionPointers.GetNodeById))
+            return 0;
+
         var container = addon->GetNodeById(16);
         if (container == null)
             return 0;
