@@ -63,6 +63,10 @@ public unsafe class DeepDungeonService : IDisposable
     /// 本次進場已記過「查不到魔陶器欄位」的 DeepDungeonId;查不到的結果不快取、每幀都會重查,靠它避免每幀洗 log。
     private readonly HashSet<byte> slotMissLogged = new();
 
+    // 開箱距離「遊戲判定 vs 舊門檻」不一致的診斷：每個 EntityId 一行、整個工作階段最多這麼多行。
+    private const int MaxRangeDiagLines = 16;
+    private readonly HashSet<uint> rangeDiagLogged = new();
+
     public DeepDungeonService()
     {
         FloorTimes = new Dictionary<int, int>();
@@ -469,9 +473,8 @@ public unsafe class DeepDungeonService : IDisposable
             // We dont want to kill the player
             if (type == ESPObject.ESPType.SilverChest && player.CurrentHp <= player.MaxHp * 0.77) return;
 
-            if (CheckChestOpenSafe(type) && espObj.Distance() <= espObj.InteractionDistance()
-                                         && !FloorDetails.InteractionList.Contains(espObj.EntityId)
-                                         && CanInteract())
+            if (CheckChestOpenSafe(type) && !FloorDetails.InteractionList.Contains(espObj.EntityId)
+                                         && CanInteract() && InInteractRange(player, gameObject, espObj))
             {
                 TargetSystem.Instance()->InteractWithObject((GameObject*)gameObject.Address);
                 FloorDetails.InteractionList.Add(espObj.EntityId);
@@ -483,8 +486,33 @@ public unsafe class DeepDungeonService : IDisposable
         GameFunctions.Resolved(TargetSystem.StaticAddressPointers.pInstance)
         && GameFunctions.Resolved(TargetSystem.MemberFunctionPointers.InteractWithObject);
 
+    /// <summary>
+    /// 開箱距離由遊戲判定（遊戲自己互動前用的同一個檢查）；位址解不出來時退回自訂的 2D 門檻。
+    /// <paramref name="player"/>／<paramref name="target"/> 只在這次呼叫內使用，不可存起來。只在框架執行緒呼叫。
+    /// </summary>
+    private bool InInteractRange(Dalamud.Game.ClientState.Objects.Types.IGameObject player,
+                                 Dalamud.Game.ClientState.Objects.Types.IGameObject target, ESPObject espObj)
+    {
+        var legacy = espObj.Distance() <= espObj.InteractionDistance();
+        if (!GameFunctions.Resolved(EventFramework.StaticAddressPointers.ppInstance)
+            || !GameFunctions.Resolved(EventFramework.MemberFunctionPointers.CheckInteractRange))
+            return legacy;
+
+        var eventFramework = EventFramework.Instance();
+        if (eventFramework == null) return legacy;
+
+        var inRange = eventFramework->CheckInteractRange((GameObject*)player.Address, (GameObject*)target.Address, 1, false);
+        if (inRange != legacy && rangeDiagLogged.Count < MaxRangeDiagLines && rangeDiagLogged.Add(espObj.EntityId))
+            PluginLog.Information($"NecroLens:開箱距離判定與舊門檻不同（{espObj.Type}，遊戲={inRange}，舊門檻={legacy}，" +
+                                  $"2D 距離 {espObj.Distance():F2}／門檻 {espObj.InteractionDistance():F1}）");
+        return inRange;
+    }
+
     public void TryNearestOpenChest()
     {
+        var player = ObjectTable.LocalPlayer;
+        if (player == null) return;
+
         // Checks every object to be a chest and try to open the
         foreach (var obj in ObjectTable)
             if (obj.IsValid())
@@ -494,8 +522,7 @@ public unsafe class DeepDungeonService : IDisposable
                     DataIds.GoldChest == dataId || DataIds.AccursedHoardCoffer == dataId)
                 {
                     var espObj = new ESPObject(obj);
-                    if (CheckChestOpenSafe(espObj.Type) && espObj.Distance() <= espObj.InteractionDistance()
-                        && CanInteract())
+                    if (CheckChestOpenSafe(espObj.Type) && CanInteract() && InInteractRange(player, obj, espObj))
                     {
                         TargetSystem.Instance()->InteractWithObject((GameObject*)obj.Address);
                         break;

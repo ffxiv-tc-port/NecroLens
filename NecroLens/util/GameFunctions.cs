@@ -19,7 +19,7 @@ internal static unsafe class GameFunctions
         lock (Reported)
         {
             if (Reported.Add(name))
-                PluginLog.Warning($"遊戲函式位址對不上（{name}），相關功能停用；需等插件更新。");
+                PluginLog.Warning($"遊戲函式位址對不上（{name}），相關功能停用或改用備援判斷；需等插件更新。");
         }
 
         return false;
