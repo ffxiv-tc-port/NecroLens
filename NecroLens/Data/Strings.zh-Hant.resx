@@ -351,7 +351,7 @@
     <value>陷阱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects_MimicCoffer" xml:space="preserve">
-    <value>模仿怪寶箱</value>
+    <value>擬態怪寶箱</value>
   </data>
   <data name="ConfigWindow_ESPTab_HighlightObjects_PassageName" xml:space="preserve">
     <value>傳送裝置名稱</value>

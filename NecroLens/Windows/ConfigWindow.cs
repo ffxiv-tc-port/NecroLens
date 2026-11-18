@@ -371,7 +371,7 @@ public class ConfigWindow() : Window(Strings.ConfigWindow_Title, ImGuiWindowFlag
             Config.Save();
         }
 
-        // 以下四項的介面開關:陷阱與模仿怪寶箱和 PalacePal 的顯示重疊(它有歷史記錄資料庫),
+        // 以下四項的介面開關:陷阱與擬態怪寶箱和 PalacePal 的顯示重疊(它有歷史記錄資料庫),
         // 有開關才能把這兩項讓給 PalacePal。
         var showTraps = conf.ShowTraps;
         if (ImGui.Checkbox(Strings.ConfigWindow_ESPTab_HighlightObjects_Traps, ref showTraps))
