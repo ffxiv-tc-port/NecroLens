@@ -56,7 +56,11 @@ public class ESPObject
     // EntityId -> 該物件的名字。只在繪製執行緒讀寫；BaseId／NameId 對不上就重讀，空名字不快取。
     private static readonly Dictionary<uint, CachedName> NameCache = new();
 
-    private readonly record struct CachedName(uint BaseId, uint NameId, string Name);
+    // EntityId 無效的物件（通道、返回、奉納等）改用綁定時的位址當鍵：同一幀不同物件位址必不同。
+    // 位址只當字典鍵比相等、從不解參；種類／BaseId／NameId 對不上就重讀。
+    private static readonly Dictionary<nint, CachedName> NameCacheByAddress = new();
+
+    private readonly record struct CachedName(uint BaseId, uint NameId, ObjectKind Kind, string Name);
 
     private MobInfo? mobInfo;
 
@@ -425,15 +429,29 @@ public class ESPObject
     {
         var entityId = EntityId;
         var baseId = BaseId;
-        if (entityId != InvalidEntityId && NameCache.TryGetValue(entityId, out var cached) &&
-            cached.BaseId == baseId && cached.NameId == NameId)
+        var byAddress = entityId == InvalidEntityId;
+        if (byAddress && address == 0) return string.Empty;
+
+        var found = byAddress
+                        ? NameCacheByAddress.TryGetValue(address, out var cached)
+                        : NameCache.TryGetValue(entityId, out cached);
+        if (found && cached.BaseId == baseId && cached.NameId == NameId && cached.Kind == objectKind)
             return cached.Name;
 
         var name = Live()?.Name.TextValue ?? string.Empty;
-        if (entityId != InvalidEntityId && name.Length > 0)
+        if (name.Length > 0)
         {
-            if (NameCache.Count >= MaxCachedNames) NameCache.Clear();
-            NameCache[entityId] = new CachedName(baseId, NameId, name);
+            var entry = new CachedName(baseId, NameId, objectKind, name);
+            if (byAddress)
+            {
+                if (NameCacheByAddress.Count >= MaxCachedNames) NameCacheByAddress.Clear();
+                NameCacheByAddress[address] = entry;
+            }
+            else
+            {
+                if (NameCache.Count >= MaxCachedNames) NameCache.Clear();
+                NameCache[entityId] = entry;
+            }
         }
 
         return name;
