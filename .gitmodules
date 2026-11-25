@@ -1,3 +1,4 @@
 [submodule "ECommons"]
 	path = ECommons
 	url = https://github.com/ffxiv-tc-port/ECommons.git
+	branch = tc-7.30
